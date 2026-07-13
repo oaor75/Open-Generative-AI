@@ -4,6 +4,7 @@ const fs = require('fs');
 const https = require('https');
 const http = require('http');
 const { spawn, execFile } = require('child_process');
+const crypto = require('crypto');
 const {
     getBundledBinaryResourceDir,
     pickBinaryAssetForPlatform,
@@ -145,18 +146,50 @@ function downloadFile(url, destPath, onProgress) {
     return attempt(url, 10, 5);
 }
 
+// ─── Download integrity ──────────────────────────────────────────────────────
+function sha256File(filePath) {
+    return new Promise((resolve, reject) => {
+        const hash = crypto.createHash('sha256');
+        fs.createReadStream(filePath)
+            .on('error', reject)
+            .on('data', (chunk) => hash.update(chunk))
+            .on('end', () => resolve(hash.digest('hex')));
+    });
+}
+
+// Verifies a downloaded archive against an expected SHA-256 before it is
+// extracted, chmod-ed and executed. `expected` accepts "sha256:<hex>" (the
+// GitHub release-asset `digest` format) or a bare hex string. Deletes the
+// file and throws on mismatch.
+async function verifyDownloadIntegrity(filePath, expected, label) {
+    if (!expected) return false;
+    const expectedHex = String(expected).replace(/^sha256:/i, '').toLowerCase();
+    const actualHex = await sha256File(filePath);
+    if (actualHex !== expectedHex) {
+        try { fs.unlinkSync(filePath); } catch { /* best effort */ }
+        throw new Error(
+            `Integrity check failed for ${label}: expected sha256 ${expectedHex} but got ${actualHex}. ` +
+            'The download was discarded — the release asset may have been tampered with.'
+        );
+    }
+    return true;
+}
+
 // ─── Extract zip on each platform ────────────────────────────────────────────
 function extractZip(zipPath, destDir) {
     return new Promise((resolve, reject) => {
-        let cmd, args;
+        let cmd, args, opts = {};
         if (process.platform === 'win32') {
+            // Paths travel via environment variables, never interpolated into
+            // the -Command string, so a hostile asset name can't inject code.
             cmd = 'powershell';
-            args = ['-NoProfile', '-Command', `Expand-Archive -Force -Path "${zipPath}" -DestinationPath "${destDir}"`];
+            args = ['-NoProfile', '-Command', 'Expand-Archive -Force -Path $env:OGA_ZIP_PATH -DestinationPath $env:OGA_DEST_DIR'];
+            opts = { env: { ...process.env, OGA_ZIP_PATH: zipPath, OGA_DEST_DIR: destDir } };
         } else {
             cmd = 'unzip';
             args = ['-o', zipPath, '-d', destDir];
         }
-        execFile(cmd, args, (err) => {
+        execFile(cmd, args, opts, (err) => {
             if (err) reject(err);
             else resolve();
         });
@@ -230,6 +263,13 @@ const CUSTOM_BINARIES = {
     'darwin-arm64': 'https://github.com/Anil-matcha/Open-Generative-AI/releases/download/v1.0.3-binaries/sd-cli-metal-macos-arm64.zip',
 };
 
+// Pinned SHA-256 for the assets in CUSTOM_BINARIES. These URLs point at a
+// fixed tag, so the hash must be updated in the same commit that changes the
+// URL. A mismatch aborts the install (see verifyDownloadIntegrity).
+const CUSTOM_BINARY_SHA256 = {
+    'darwin-arm64': '197c1254468cac17a00dce9256d683be43bf20ea202d3c2915debc05c6deaac0',
+};
+
 async function downloadBinary(mainWindow) {
     const send = (data) => mainWindow?.webContents.send('local-ai:download-progress', { id: '__binary__', ...data });
 
@@ -244,11 +284,12 @@ async function downloadBinary(mainWindow) {
         const platformKey = `${process.platform}-${process.arch}`;
         const customUrl = CUSTOM_BINARIES[platformKey];
 
-        let downloadUrl, zipName;
+        let downloadUrl, zipName, expectedSha256 = null;
 
         if (customUrl) {
             downloadUrl = customUrl;
             zipName = path.basename(customUrl);
+            expectedSha256 = CUSTOM_BINARY_SHA256[platformKey] || null;
         } else {
             // Walk recent releases until we find one that actually ships a
             // build for this platform. leejet sometimes publishes a partial
@@ -287,13 +328,24 @@ async function downloadBinary(mainWindow) {
             }
             downloadUrl = chosen.browser_download_url;
             zipName = chosen.name;
+            // GitHub exposes each asset's checksum as digest: "sha256:<hex>".
+            // Verifying it protects the download path (CDN/MITM/truncation),
+            // though not a compromise of the upstream release itself.
+            expectedSha256 = chosen.digest || null;
         }
+
+        // The asset name comes from a remote API — never let it smuggle path
+        // separators or shell metacharacters into the filesystem path.
+        zipName = zipName.replace(/[^A-Za-z0-9._-]/g, '_');
 
         send({ phase: 'downloading', progress: 0 });
         const zipPath = path.join(BIN_DIR, zipName);
         await downloadFile(downloadUrl, zipPath, (p) => {
             send({ phase: 'downloading', progress: p });
         });
+
+        send({ phase: 'verifying', progress: 0.9 });
+        await verifyDownloadIntegrity(zipPath, expectedSha256, zipName);
 
         send({ phase: 'extracting', progress: 0.95 });
         await extractZip(zipPath, BIN_DIR);

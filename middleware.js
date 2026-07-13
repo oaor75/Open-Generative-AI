@@ -13,9 +13,14 @@ function addSecurityHeaders(response) {
     // connect-src covers *.muapi.ai (not just api.muapi.ai) because generated
     // media, model thumbnails, and other assets are served from cdn.muapi.ai
     // and other muapi subdomains that the renderer fetches directly.
+    // 'unsafe-eval' is only required by the Next.js dev runtime — never ship it
+    // in production, where it would let any XSS escalate to arbitrary JS eval.
+    const scriptSrc = process.env.NODE_ENV === 'development'
+        ? "'self' 'unsafe-eval' 'unsafe-inline'"
+        : "'self' 'unsafe-inline'";
     response.headers.set(
         'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://muapi.ai https://*.muapi.ai; font-src 'self' data:;"
+        `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://muapi.ai https://*.muapi.ai; font-src 'self' data:;`
     );
     return response;
 }
@@ -36,7 +41,14 @@ export function middleware(request) {
 
         if (url.pathname.startsWith('/api/v1') && !isHandledByRoute) {
             const targetUrl = new URL(url.pathname + url.search, 'https://api.muapi.ai');
-            const rewriteResponse = NextResponse.rewrite(targetUrl);
+            // Never forward browser cookies to the upstream API — auth travels
+            // exclusively in the x-api-key header (same policy as the route
+            // handlers, which strip cookie/host before proxying).
+            const requestHeaders = new Headers(request.headers);
+            requestHeaders.delete('cookie');
+            const rewriteResponse = NextResponse.rewrite(targetUrl, {
+                request: { headers: requestHeaders },
+            });
             return addSecurityHeaders(rewriteResponse);
         }
     }

@@ -1,0 +1,31 @@
+# Mantiene este fork actualizado con la comunidad:
+# cada lunes (y bajo demanda) trae upstream/main y lo fusiona en la rama por
+# defecto conservando tus mejoras. Si hay conflicto, el job falla y GitHub te
+# avisa por correo para resolverlo a mano.
+name: Sync con upstream
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # lunes 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Merge upstream/main
+        run: |
+          git config user.name "sync-bot"
+          git config user.email "actions@github.com"
+          git remote add upstream https://github.com/anil-matcha/open-generative-ai.git
+          git fetch upstream main
+          git merge --no-edit upstream/main
+          git push origin HEAD

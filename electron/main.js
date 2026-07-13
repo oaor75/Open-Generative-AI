@@ -35,6 +35,7 @@ function createWindow() {
             webSecurity: true,
             contextIsolation: true,
             nodeIntegration: false,
+            sandbox: true,
             preload: path.join(__dirname, 'preload.js'),
         },
         ...(isMac ? { titleBarStyle: 'hiddenInset' } : {}),
@@ -53,9 +54,31 @@ function createWindow() {
         console.error('did-fail-load:', code, desc);
     });
 
+    // Only hand off safe web/mail URLs to the OS. Anything else (file:, smb:,
+    // custom protocol handlers) could launch local executables on Windows.
+    const SAFE_EXTERNAL_PROTOCOLS = new Set(['https:', 'http:', 'mailto:']);
+    const openExternalSafe = (url) => {
+        try {
+            if (SAFE_EXTERNAL_PROTOCOLS.has(new URL(url).protocol)) {
+                shell.openExternal(url);
+            }
+        } catch {
+            // malformed URL — ignore
+        }
+    };
+
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-        shell.openExternal(url);
+        openExternalSafe(url);
         return { action: 'deny' };
+    });
+
+    // The renderer is a local file:// bundle; never let the main frame
+    // navigate to remote content (a remote page would run with our preload).
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        if (!url.startsWith('file://')) {
+            event.preventDefault();
+            openExternalSafe(url);
+        }
     });
 
     mainWindow.once('ready-to-show', () => {
