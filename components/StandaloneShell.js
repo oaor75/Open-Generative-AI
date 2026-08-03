@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ImageStudio, VideoStudio, ClippingStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, AudioStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, AiInfluencerStudio, getUserBalance } from 'studio';
@@ -178,7 +178,95 @@ const TABS = [
   }
 ];
 
+const NAVIGATION_CATEGORIES = [
+  {
+    id: 'images',
+    label: 'Images',
+    tabIds: ['image', 'cinema', 'design-agent', 'ai-influencer'],
+    icon: (
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <path d="M21 15l-5-5L5 21"/>
+      </svg>
+    )
+  },
+  {
+    id: 'video',
+    label: 'Video',
+    tabIds: ['video', 'clipping', 'vibe-motion', 'lipsync', 'body-swap', 'marketing'],
+    icon: (
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="15" height="16" rx="2"/>
+        <path d="M17 9l5-3v12l-5-3"/>
+        <path d="M8 9l4 3-4 3z"/>
+      </svg>
+    )
+  },
+  {
+    id: 'audio',
+    label: 'Audio',
+    tabIds: ['audio'],
+    icon: (
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18V5l12-2v13"/>
+        <circle cx="6" cy="18" r="3"/>
+        <circle cx="18" cy="16" r="3"/>
+      </svg>
+    )
+  },
+  {
+    id: 'agents-automation',
+    label: 'Agents & Automation',
+    tabIds: ['agents', 'workflows'],
+    icon: (
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="6" height="6" rx="1"/>
+        <rect x="15" y="3" width="6" height="6" rx="1"/>
+        <rect x="9" y="15" width="6" height="6" rx="1"/>
+        <path d="M6 9v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9"/>
+        <path d="M12 13v2"/>
+      </svg>
+    )
+  }
+];
+
+const EXPLORE_APPS_TAB = TABS.find((tab) => tab.id === 'apps');
+
+const getNavigationCategory = (tabId) => (
+  NAVIGATION_CATEGORIES.find((category) => category.tabIds.includes(tabId))
+);
+
 const STORAGE_KEY = 'muapi_key';
+const NOTIFICATIONS_STORAGE_KEY = 'open_gen_notifications_v1';
+const MAX_VISIBLE_NOTIFICATIONS = 3;
+
+const loadStoredNotifications = () => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(NOTIFICATIONS_STORAGE_KEY) || '[]');
+    const now = Date.now();
+    return Array.isArray(stored)
+      ? stored.filter((notification) => notification.expiresAt > now).slice(0, MAX_VISIBLE_NOTIFICATIONS)
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+const persistNotifications = (notifications) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.setItem(
+      NOTIFICATIONS_STORAGE_KEY,
+      JSON.stringify(notifications),
+    );
+  } catch {
+    // Notification persistence is optional; rendering still works without storage.
+  }
+};
 
 export default function StandaloneShell() {
   const params = useParams();
@@ -231,6 +319,10 @@ export default function StandaloneShell() {
     return false;
   });
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [expandedCategoryId, setExpandedCategoryId] = useState(() => (
+    getNavigationCategory(getInitialTab())?.id || NAVIGATION_CATEGORIES[0].id
+  ));
+  const activeCategory = getNavigationCategory(activeTab);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarCollapsed(prev => {
@@ -240,36 +332,126 @@ export default function StandaloneShell() {
     });
   }, []);
 
+  const handleCategoryToggle = useCallback((categoryId) => {
+    const isCollapsedNavigation = isSidebarCollapsed && !isMobileOpen;
+
+    if (!isCollapsedNavigation) {
+      setExpandedCategoryId((currentId) => (
+        currentId === categoryId ? null : categoryId
+      ));
+      return;
+    }
+
+    setExpandedCategoryId(categoryId);
+    toggleSidebar();
+  }, [isMobileOpen, isSidebarCollapsed, toggleSidebar]);
+
+  useEffect(() => {
+    if (activeCategory?.id) {
+      setExpandedCategoryId(activeCategory.id);
+    }
+  }, [activeCategory?.id]);
+
   // Drag and Drop State
   const [isDragging, setIsDragging] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState(null);
 
-  // ── Global Generation Notifications ────────────────────────────────────────
+  // Global generation notifications remain mounted while users switch studios.
   const [notifications, setNotifications] = useState([]);
-  const activeTabRef = useRef(null);
-  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+  const [notificationsHydrated, setNotificationsHydrated] = useState(false);
+  const [generationCounts, setGenerationCounts] = useState({});
+
+  useEffect(() => {
+    setNotifications(loadStoredNotifications());
+    setNotificationsHydrated(true);
+  }, []);
 
   const pushNotification = useCallback((notif) => {
+    const now = Date.now();
     const id = `notif-${Date.now()}-${Math.random()}`;
-    const entry = { ...notif, id };
-    setNotifications(prev => [entry, ...prev].slice(0, 5));
-    const ttl = notif.type === 'success' ? 8000 : 6000;
-    setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), ttl);
+    const ttl = 12000;
+    const entry = { ...notif, id, expiresAt: now + ttl };
+    setNotifications((previous) => {
+      const next = [
+        ...previous.filter((notification) => notification.expiresAt > now),
+        entry,
+      ].slice(-MAX_VISIBLE_NOTIFICATIONS);
+      persistNotifications(next);
+      return next;
+    });
   }, []);
 
   const dismissNotification = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((previous) => {
+      const next = previous.filter((notification) => notification.id !== id);
+      persistNotifications(next);
+      return next;
+    });
   }, []);
+
+  useEffect(() => {
+    if (!notificationsHydrated) return;
+
+    persistNotifications(notifications);
+  }, [notifications, notificationsHydrated]);
+
+  useEffect(() => {
+    if (notifications.length === 0) return undefined;
+
+    const nextExpiry = Math.min(...notifications.map((notification) => notification.expiresAt));
+    const timer = window.setTimeout(() => {
+      const now = Date.now();
+      setNotifications((previous) => previous.filter((notification) => notification.expiresAt > now));
+    }, Math.max(0, nextExpiry - Date.now()));
+
+    return () => window.clearTimeout(timer);
+  }, [notifications]);
 
   const makeSuccessCallback = useCallback((tabId) => (data) => {
     const tab = TABS.find(t => t.id === tabId);
-    pushNotification({ type: 'success', tabId, label: tab?.label || tabId, data });
+    pushNotification({
+      type: 'success',
+      tabId,
+      label: tab?.label || tabId,
+      resultUrl: data?.url || null,
+    });
   }, [pushNotification]);
 
   const makeErrorCallback = useCallback((tabId) => (message) => {
     const tab = TABS.find(t => t.id === tabId);
     pushNotification({ type: 'error', tabId, label: tab?.label || tabId, message });
   }, [pushNotification]);
+
+  const makeGenerationStartCallback = useCallback((tabId) => () => {
+    setGenerationCounts((previous) => ({
+      ...previous,
+      [tabId]: (previous[tabId] || 0) + 1,
+    }));
+  }, []);
+
+  const makeGenerationEndCallback = useCallback((tabId) => () => {
+    setGenerationCounts((previous) => {
+      const currentCount = previous[tabId] || 0;
+      if (currentCount <= 1) {
+        const next = { ...previous };
+        delete next[tabId];
+        return next;
+      }
+
+      return {
+        ...previous,
+        [tabId]: currentCount - 1,
+      };
+    });
+  }, []);
+
+  const activeGenerations = TABS
+    .filter((tab) => generationCounts[tab.id] > 0)
+    .map((tab) => ({
+      tabId: tab.id,
+      label: tab.label,
+      count: generationCounts[tab.id],
+    }));
 
   // Popstate event listener to sync tab state with URL on back/forward navigation
   useEffect(() => {
@@ -285,15 +467,28 @@ export default function StandaloneShell() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const handleTabChange = (tabId) => {
+  const handleTabChange = useCallback((tabId) => {
     window.history.pushState(null, '', `/studio/${tabId}`);
     setActiveTab(tabId);
-  };
+  }, []);
+
+  const handleOpenNotification = useCallback((notification) => {
+    handleTabChange(notification.tabId);
+    dismissNotification(notification.id);
+  }, [dismissNotification, handleTabChange]);
 
   const handleTabClick = (e, tabId) => {
     if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
       e.preventDefault();
       handleTabChange(tabId);
+      return true;
+    }
+    return false;
+  };
+
+  const handleNavigationItemClick = (event, tabId) => {
+    if (handleTabClick(event, tabId)) {
+      setIsMobileOpen(false);
     }
   };
 
@@ -595,53 +790,137 @@ export default function StandaloneShell() {
               ${isSidebarCollapsed ? 'md:w-16' : 'md:w-52'}
             `}
           >
-            {/* Navigation Tab Links */}
-            <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none py-2 px-2 space-y-1">
-              {TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
-                const isCollapsed = isSidebarCollapsed && !isMobileOpen;
-                return (
+            <nav aria-label="Studio navigation" className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none py-2 px-2">
+              <div className="space-y-1">
+                {NAVIGATION_CATEGORIES.map((category) => {
+                  const isCategoryActive = activeCategory?.id === category.id;
+                  const isCollapsed = isSidebarCollapsed && !isMobileOpen;
+                  const isCategoryOpen = !isCollapsed && expandedCategoryId === category.id;
+                  const categoryPanelId = `navigation-category-${category.id}`;
+
+                  return (
+                    <div key={category.id} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => handleCategoryToggle(category.id)}
+                        aria-label={category.label}
+                        aria-expanded={isCategoryOpen}
+                        aria-controls={isCollapsed ? undefined : categoryPanelId}
+                        title={isCollapsed ? category.label : undefined}
+                        className={`
+                          group relative flex items-center rounded-xl transition-all duration-150 font-semibold
+                          ${isCollapsed ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3 text-left'}
+                          ${isCategoryActive
+                            ? 'bg-gradient-to-r from-[#22d3ee]/15 to-purple-500/10 text-[#22d3ee] border border-[#22d3ee]/20 shadow-[0_0_15px_rgba(34,211,238,0.08)]'
+                            : isCategoryOpen
+                              ? 'bg-white/[0.06] text-white border border-white/[0.08]'
+                              : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                          }
+                        `}
+                      >
+                        {isCategoryActive && (
+                          <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-[#22d3ee] to-[#a855f7] rounded-r-full shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
+                        )}
+
+                        <span className={`flex-shrink-0 transition-colors ${isCategoryActive ? 'text-[#22d3ee]' : 'text-white/55 group-hover:text-white'}`}>
+                          {category.icon}
+                        </span>
+
+                        {!isCollapsed && (
+                          <>
+                            <span className="flex-1 min-w-0 text-[12px] leading-4 tracking-tight">
+                              {category.label}
+                            </span>
+                            <svg
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`flex-shrink-0 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`}
+                              aria-hidden="true"
+                            >
+                              <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                          </>
+                        )}
+                      </button>
+
+                      {!isCollapsed && isCategoryOpen && (
+                        <div
+                          id={categoryPanelId}
+                          role="group"
+                          aria-label={`${category.label} tools`}
+                          className="mt-1 ml-2 pl-2 border-l border-white/[0.08] space-y-1 max-h-64 overflow-y-auto scrollbar-none"
+                        >
+                          {category.tabIds.map((tabId) => {
+                            const tab = TABS.find((item) => item.id === tabId);
+                            if (!tab) return null;
+                            const isActive = activeTab === tab.id;
+
+                            return (
+                              <a
+                                key={tab.id}
+                                href={`/studio/${tab.id}`}
+                                onClick={(event) => handleNavigationItemClick(event, tab.id)}
+                                aria-current={isActive ? 'page' : undefined}
+                                className={`
+                                  group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12px] font-medium transition-all duration-150
+                                  ${isActive
+                                    ? 'bg-[#22d3ee]/12 text-[#22d3ee] border border-[#22d3ee]/20'
+                                    : 'text-white/55 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                                  }
+                                `}
+                              >
+                                {isActive && (
+                                  <span className="absolute -left-[11px] top-2 bottom-2 w-0.5 rounded-full bg-[#22d3ee] shadow-[0_0_7px_rgba(34,211,238,0.7)]" />
+                                )}
+                                <span className={`flex-shrink-0 ${isActive ? 'text-[#22d3ee]' : 'text-white/45 group-hover:text-white/80'}`}>
+                                  {tab.icon}
+                                </span>
+                                <span className="truncate">{tab.label}</span>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {EXPLORE_APPS_TAB && (
+                <div className="mt-3 pt-3 border-t border-white/[0.07]">
                   <a
-                    key={tab.id}
-                    href={`/studio/${tab.id}`}
-                    onClick={(e) => {
-                      handleTabClick(e, tab.id);
-                      setIsMobileOpen(false);
-                    }}
+                    href={`/studio/${EXPLORE_APPS_TAB.id}`}
+                    onClick={(event) => handleNavigationItemClick(event, EXPLORE_APPS_TAB.id)}
+                    aria-current={activeTab === EXPLORE_APPS_TAB.id ? 'page' : undefined}
+                    aria-label={EXPLORE_APPS_TAB.label}
+                    title={isSidebarCollapsed && !isMobileOpen ? EXPLORE_APPS_TAB.label : undefined}
                     className={`
-                      group relative flex items-center rounded-lg transition-all duration-150 text-[13px] font-medium
-                      ${isCollapsed ? 'h-10 w-10 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3'}
-                      ${isActive 
-                        ? 'bg-gradient-to-r from-[#22d3ee]/15 to-purple-500/10 text-[#22d3ee] font-semibold border border-[#22d3ee]/20 shadow-[0_0_15px_rgba(34,211,238,0.1)]' 
-                        : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                      group relative flex items-center rounded-xl transition-all duration-150 text-[13px] font-semibold
+                      ${isSidebarCollapsed && !isMobileOpen ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3'}
+                      ${activeTab === EXPLORE_APPS_TAB.id
+                        ? 'bg-gradient-to-r from-[#22d3ee]/15 to-purple-500/10 text-[#22d3ee] border border-[#22d3ee]/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
                       }
                     `}
                   >
-                    {/* Active Accent Pill */}
-                    {isActive && (
-                      <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-[#22d3ee] to-[#a855f7] rounded-r-full shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
+                    {activeTab === EXPLORE_APPS_TAB.id && (
+                      <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-[#22d3ee] to-[#a855f7] rounded-r-full" />
                     )}
-
-                    {/* SVG Icon */}
-                    <span className={`flex-shrink-0 transition-colors ${isActive ? 'text-[#22d3ee]' : 'text-white/50 group-hover:text-white'}`}>
-                      {tab.icon}
+                    <span className={`flex-shrink-0 ${activeTab === EXPLORE_APPS_TAB.id ? 'text-[#22d3ee]' : 'text-white/50 group-hover:text-white'}`}>
+                      {EXPLORE_APPS_TAB.icon}
                     </span>
-
-                    {/* Tab Label (visible when expanded) */}
-                    {!isCollapsed && (
-                      <span className="truncate flex-1 tracking-tight">{tab.label}</span>
-                    )}
-
-                    {/* Sleek Custom Floating Tooltip (Fixed outside sidebar so it never clips or causes overflow) */}
-                    {isCollapsed && (
-                      <div className="fixed left-16 ml-1 px-3 py-1.5 bg-[#121215]/95 backdrop-blur-md text-white text-xs font-semibold rounded-lg shadow-2xl border border-white/15 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-[100] whitespace-nowrap flex items-center gap-2 -translate-x-1 group-hover:translate-x-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#22d3ee] shadow-[0_0_6px_#22d3ee]" />
-                        <span>{tab.label}</span>
-                      </div>
+                    {(!isSidebarCollapsed || isMobileOpen) && (
+                      <span className="truncate">{EXPLORE_APPS_TAB.label}</span>
                     )}
                   </a>
-                );
-              })}
+                </div>
+              )}
             </nav>
           </aside>
         )}
@@ -649,123 +928,191 @@ export default function StandaloneShell() {
         {/* Studio Content */}
         <div className="flex-1 min-h-0 h-full relative overflow-hidden bg-[#030303]">
         <div className={activeTab === 'image' ? "h-full w-full" : "hidden"}>
-          <ImageStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('image')} onGenerationError={makeErrorCallback('image')} />
+          <ImageStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('image')} onGenerationEnd={makeGenerationEndCallback('image')} onGenerationComplete={makeSuccessCallback('image')} onGenerationError={makeErrorCallback('image')} />
         </div>
         <div className={activeTab === 'video' ? "h-full w-full" : "hidden"}>
-          <VideoStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('video')} onGenerationError={makeErrorCallback('video')} />
+          <VideoStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('video')} onGenerationEnd={makeGenerationEndCallback('video')} onGenerationComplete={makeSuccessCallback('video')} onGenerationError={makeErrorCallback('video')} />
         </div>
         <div className={activeTab === 'clipping' ? "h-full w-full" : "hidden"}>
-          <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('clipping')} onGenerationError={makeErrorCallback('clipping')} />
+          <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('clipping')} onGenerationEnd={makeGenerationEndCallback('clipping')} onGenerationComplete={makeSuccessCallback('clipping')} onGenerationError={makeErrorCallback('clipping')} />
         </div>
         <div className={activeTab === 'vibe-motion' ? "h-full w-full" : "hidden"}>
-          <VibeMotionStudio apiKey={apiKey} onGenerationComplete={makeSuccessCallback('vibe-motion')} onGenerationError={makeErrorCallback('vibe-motion')} />
+          <VibeMotionStudio apiKey={apiKey} onGenerationStart={makeGenerationStartCallback('vibe-motion')} onGenerationEnd={makeGenerationEndCallback('vibe-motion')} onGenerationComplete={makeSuccessCallback('vibe-motion')} onGenerationError={makeErrorCallback('vibe-motion')} />
         </div>
         <div className={activeTab === 'lipsync' ? "h-full w-full" : "hidden"}>
-          <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('lipsync')} onGenerationError={makeErrorCallback('lipsync')} />
+          <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('lipsync')} onGenerationEnd={makeGenerationEndCallback('lipsync')} onGenerationComplete={makeSuccessCallback('lipsync')} onGenerationError={makeErrorCallback('lipsync')} />
         </div>
         <div className={activeTab === 'body-swap' ? "h-full w-full" : "hidden"}>
-          <RecastStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('body-swap')} onGenerationError={makeErrorCallback('body-swap')} />
+          <RecastStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('body-swap')} onGenerationEnd={makeGenerationEndCallback('body-swap')} onGenerationComplete={makeSuccessCallback('body-swap')} onGenerationError={makeErrorCallback('body-swap')} />
         </div>
         <div className={activeTab === 'cinema' ? "h-full w-full" : "hidden"}>
-          <CinemaStudio apiKey={apiKey} onGenerationComplete={makeSuccessCallback('cinema')} onGenerationError={makeErrorCallback('cinema')} />
+          <CinemaStudio apiKey={apiKey} onGenerationStart={makeGenerationStartCallback('cinema')} onGenerationEnd={makeGenerationEndCallback('cinema')} onGenerationComplete={makeSuccessCallback('cinema')} onGenerationError={makeErrorCallback('cinema')} />
         </div>
         <div className={activeTab === 'audio' ? "h-full w-full" : "hidden"}>
-          <AudioStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('audio')} onGenerationError={makeErrorCallback('audio')} />
+          <AudioStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('audio')} onGenerationEnd={makeGenerationEndCallback('audio')} onGenerationComplete={makeSuccessCallback('audio')} onGenerationError={makeErrorCallback('audio')} />
         </div>
         <div className={activeTab === 'marketing' ? "h-full w-full" : "hidden"}>
-          <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationComplete={makeSuccessCallback('marketing')} onGenerationError={makeErrorCallback('marketing')} />
+          <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('marketing')} onGenerationEnd={makeGenerationEndCallback('marketing')} onGenerationComplete={makeSuccessCallback('marketing')} onGenerationError={makeErrorCallback('marketing')} />
         </div>
         <div className={activeTab === 'workflows' ? "h-full w-full" : "hidden"}>
-          <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />
+          <WorkflowStudio
+            apiKey={apiKey}
+            isHeaderVisible={isHeaderVisible}
+            onToggleHeader={setIsHeaderVisible}
+            onGenerationStart={makeGenerationStartCallback('workflows')}
+            onGenerationEnd={makeGenerationEndCallback('workflows')}
+            onGenerationComplete={makeSuccessCallback('workflows')}
+            onGenerationError={makeErrorCallback('workflows')}
+          />
         </div>
         <div className={activeTab === 'agents' ? "h-full w-full" : "hidden"}>
           <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />
         </div>
         <div className={activeTab === 'design-agent' ? "h-full w-full" : "hidden"}>
           {activeTab === 'design-agent' && (
-            <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />
+            <DesignAgentStudio
+              apiKey={apiKey}
+              isHeaderVisible={isHeaderVisible}
+              onToggleHeader={setIsHeaderVisible}
+              onGenerationStart={makeGenerationStartCallback('design-agent')}
+              onGenerationEnd={makeGenerationEndCallback('design-agent')}
+              onGenerationComplete={makeSuccessCallback('design-agent')}
+              onGenerationError={makeErrorCallback('design-agent')}
+            />
           )}
         </div>
         <div className={activeTab === 'apps' ? "h-full w-full" : "hidden"}>
           <AppsStudio apiKey={apiKey} />
         </div>
         <div className={activeTab === 'ai-influencer' ? "h-full w-full" : "hidden"}>
-          <AiInfluencerStudio apiKey={apiKey} />
+          <AiInfluencerStudio
+            apiKey={apiKey}
+            onGenerationStart={makeGenerationStartCallback('ai-influencer')}
+            onGenerationEnd={makeGenerationEndCallback('ai-influencer')}
+            onGenerationComplete={makeSuccessCallback('ai-influencer')}
+            onGenerationError={makeErrorCallback('ai-influencer')}
+          />
         </div>
       </div>
     </div>
 
-      {/* ── Global Generation Notification Stack ── */}
-      {notifications.length > 0 && (
+      {/* Global generation activity and notification stack */}
+      {(activeGenerations.length > 0 || notifications.length > 0) && (
         <div
           aria-live="polite"
-          className="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"
-          style={{ maxWidth: '360px' }}
+          aria-label="Generation activity and notifications"
+          className="fixed top-16 right-5 z-[200] flex max-h-[calc(100vh-80px)] w-[340px] max-w-[calc(100vw-32px)] flex-col gap-2 overflow-x-hidden overflow-y-auto global-notif-stack pointer-events-none"
+          data-testid="global-notification-stack"
         >
+          {activeGenerations.map((generation) => (
+            <div
+              key={generation.tabId}
+              role="status"
+              data-generation-tab={generation.tabId}
+              className="pointer-events-auto flex items-center gap-3 rounded-xl border border-cyan-500/40 bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
+              data-testid="generation-activity"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-50">
+                <span
+                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-cyan-600/30 border-t-cyan-600"
+                  aria-hidden="true"
+                />
+              </span>
+              <p className="min-w-0 flex-1 font-semibold leading-5 text-zinc-900">
+                {generation.label} is generating
+                {generation.count > 1 ? ` (${generation.count})` : ''}
+              </p>
+            </div>
+          ))}
+
           {notifications.map((notif) => (
             <div
               key={notif.id}
-              className="pointer-events-auto flex items-start gap-3 bg-[#0e0e10] border rounded-xl px-4 py-3 shadow-2xl shadow-black/60"
+              role={notif.type === 'error' ? 'alert' : 'status'}
+              data-notification-type={notif.type}
+              data-notification-tab={notif.tabId}
+              className="pointer-events-auto flex items-start gap-3 rounded-xl border bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
               style={{
-                borderColor: notif.type === 'success' ? 'rgba(34,211,238,0.35)' : 'rgba(239,68,68,0.35)',
-                borderLeftWidth: '3px',
-                borderLeftColor: notif.type === 'success' ? '#22d3ee' : '#ef4444',
+                borderColor: notif.type === 'success' ? 'rgba(6,182,212,0.4)' : 'rgba(239,68,68,0.4)',
                 animation: 'slideInRight 280ms cubic-bezier(0.16,1,0.3,1) forwards',
               }}
             >
-              {/* Icon */}
-              <div
-                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
-                style={{ background: notif.type === 'success' ? 'rgba(34,211,238,0.12)' : 'rgba(239,68,68,0.12)' }}
+              <span
+                className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                  notif.type === 'success'
+                    ? 'border-cyan-400/40 bg-cyan-50 text-cyan-600'
+                    : 'border-red-400/40 bg-red-50 text-red-600'
+                }`}
               >
                 {notif.type === 'success' ? (
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
                 ) : (
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3"><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v6" />
+                    <path d="M12 17h.01" />
+                  </svg>
                 )}
-              </div>
+              </span>
 
-              {/* Body */}
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold text-white/90 leading-tight">
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold leading-5 text-zinc-900">
                   {notif.label}
-                  <span className="font-normal text-white/50">
-                    {notif.type === 'success' ? ' · Generation complete' : ' · Generation failed'}
+                  <span className="font-normal text-zinc-500">
+                    {notif.type === 'success' ? ' - Generation complete' : ' - Generation failed'}
                   </span>
                 </p>
                 {notif.type === 'error' && notif.message && (
-                  <p className="text-[11px] text-red-400/80 mt-0.5 leading-snug truncate" title={notif.message}>
+                  <p className="mt-0.5 line-clamp-2 text-[12px] font-medium leading-4 text-red-600" title={notif.message}>
                     {notif.message}
                   </p>
                 )}
                 {notif.type === 'success' && (
+                  <p className="mt-0.5 text-[12px] leading-4 text-zinc-500">
+                    Your result is ready.
+                  </p>
+                )}
+                {notif.type === 'success' && (
                   <button
-                    onClick={() => { handleTabChange(notif.tabId); dismissNotification(notif.id); }}
-                    className="mt-1.5 text-[11px] font-bold text-[#22d3ee] hover:underline"
+                    type="button"
+                    onClick={() => handleOpenNotification(notif)}
+                    className="mt-1.5 text-[11px] font-bold text-cyan-600 transition-colors hover:text-cyan-700"
+                    aria-label={`Open ${notif.label} result`}
                   >
                     Open →
                   </button>
                 )}
               </div>
 
-              {/* Dismiss */}
               <button
+                type="button"
                 onClick={() => dismissNotification(notif.id)}
-                className="flex-shrink-0 text-white/30 hover:text-white/70 transition-colors text-lg leading-none mt-0.5"
-                aria-label="Dismiss"
+                className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+                aria-label="Dismiss notification"
               >
-                ×
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
               </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Keyframe for toast slide-in */}
+      {/* Keyframe for toast slide-in & scrollbar suppression */}
       <style>{`
         @keyframes slideInRight {
           from { transform: translateX(110%); opacity: 0; }
           to   { transform: translateX(0);    opacity: 1; }
+        }
+        .global-notif-stack::-webkit-scrollbar {
+          display: none;
+        }
+        .global-notif-stack {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
 

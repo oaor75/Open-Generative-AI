@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { generateAudio, uploadFile } from "../muapi.js";
+import { formatErrorMessage } from "../utils/formatError.js";
+import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import { audioModels, getAudioModelById } from "../models.js";
 
 // ---------------------------------------------------------------------------
@@ -474,13 +477,19 @@ function PremiumAudioPlayer({ url, title }) {
 // ---------------------------------------------------------------------------
 export default function AudioStudio({
   apiKey,
+  onGenerationStart,
+  onGenerationEnd,
   onGenerationComplete,
   onGenerationError,
   historyItems,
   droppedFiles,
   onFilesHandled,
 }) {
-  const PERSIST_KEY = "hg_audio_studio_persistent";
+  const LEGACY_PERSIST_KEY = "hg_audio_studio_persistent";
+  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
+  useEffect(() => {
+    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
+  }, [PERSIST_KEY]);
 
   // ── Mode & model state ──────────────────────────────────────────────────
   const [selectedModelId, setSelectedModelId] = useState(audioModels[0]?.id ?? "");
@@ -632,6 +641,7 @@ export default function AudioStudio({
       }
     }
 
+    onGenerationStart?.();
     setIsGenerating(true);
     setGenerateError(null);
 
@@ -675,10 +685,12 @@ export default function AudioStudio({
       }
     } catch (e) {
       console.error("[AudioStudio]", e);
-      setGenerateError(e.message?.slice(0, 100) ?? "Audio generation failed");
-      onGenerationError?.(e.message?.slice(0, 120) || "Audio generation failed");
+      const errMsg = formatErrorMessage(e, "Audio generation failed");
+      if (onGenerationError) onGenerationError(errMsg);
+      else toast.error(errMsg);
     } finally {
       setIsGenerating(false);
+      onGenerationEnd?.();
     }
   };
 
@@ -1105,6 +1117,7 @@ export default function AudioStudio({
         </div>
 
       </div>
+      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

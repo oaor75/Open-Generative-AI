@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { processLipSync, uploadFile } from "../muapi.js";
+import { formatErrorMessage } from "../utils/formatError.js";
+import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import MobileGenerationActions, {
+  GenerationCopyButtons,
+} from "./MobileGenerationActions.jsx";
 import {
   lipsyncModels,
   imageLipSyncModels,
@@ -9,6 +15,24 @@ import {
   getLipSyncModelById,
   getResolutionsForLipSyncModel,
 } from "../models.js";
+import {
+  PROMPT_CONTROL_LABEL_CLASS,
+  PromptAction,
+  PromptChevronIcon,
+  PromptComposer,
+  PromptControls,
+  PromptFooter,
+  PromptMenuItem,
+  PromptMenuList,
+  PromptPopover,
+  PromptPopoverHeader,
+  PromptQualityIcon,
+  PromptSegmentedControl,
+  PromptSegmentOption,
+  PromptTextarea,
+  promptControlClassName,
+  promptMediaButtonClassName,
+} from "./prompt/PromptComposer.jsx";
 
 // ---------------------------------------------------------------------------
 // Upload button states
@@ -50,11 +74,6 @@ function MediaPickerButton({
     await onUpload(file);
   };
 
-  const borderClass =
-    uploadState === UPLOAD_STATE.READY
-      ? "border-primary/60 bg-primary/5"
-      : "border-white/[0.03] bg-white/[0.03] hover:bg-white/[0.06] hover:border-primary/40";
-
   return (
     <button
       type="button"
@@ -64,7 +83,9 @@ function MediaPickerButton({
           : `Upload ${label.toLowerCase()} file`
       }
       onClick={handleClick}
-      className={`flex-shrink-0 w-10 h-10 rounded-full border transition-all flex items-center justify-center relative overflow-hidden group ${borderClass}`}
+      className={promptMediaButtonClassName({
+        active: uploadState === UPLOAD_STATE.READY,
+      })}
     >
       <input
         ref={inputRef}
@@ -150,31 +171,17 @@ function MediaPickerButton({
 // ---------------------------------------------------------------------------
 // Inline dropdown
 // ---------------------------------------------------------------------------
-function Dropdown({ isOpen, items, selectedId, onSelect, onClose, anchorRef }) {
+function Dropdown({
+  isOpen,
+  title,
+  items,
+  selectedId,
+  onSelect,
+  onClose,
+  anchorRef,
+  className = "",
+}) {
   const dropRef = useRef(null);
-  const [style, setStyle] = useState({});
-
-  useEffect(() => {
-    if (!isOpen || !anchorRef?.current || !dropRef.current) return;
-
-    const rect = anchorRef.current.getBoundingClientRect();
-    const ddHeight = dropRef.current.offsetHeight;
-    const spaceBelow = window.innerHeight - rect.bottom - 8;
-    const spaceAbove = rect.top - 8;
-
-    let top, bottom, maxHeight;
-    if (spaceBelow >= ddHeight || spaceBelow >= spaceAbove) {
-      top = rect.bottom + 8;
-      bottom = "auto";
-      maxHeight = Math.max(150, spaceBelow - 8);
-    } else {
-      top = "auto";
-      bottom = window.innerHeight - rect.top + 8;
-      maxHeight = Math.max(150, spaceAbove - 8);
-    }
-    const left = Math.min(rect.left, window.innerWidth - 220);
-    setStyle({ top, bottom, left, maxHeight });
-  }, [isOpen, anchorRef]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -193,39 +200,34 @@ function Dropdown({ isOpen, items, selectedId, onSelect, onClose, anchorRef }) {
   if (!isOpen) return null;
 
   return (
-    <div
+    <PromptPopover
       ref={dropRef}
-      style={{
-        position: "fixed",
-        zIndex: 100,
-        overflowY: "auto",
-        ...style,
-      }}
-      className="bg-[#111] border border-white/10 rounded-lg shadow-3xl p-2 custom-scrollbar w-[calc(100vw-3rem)] max-w-xs"
+      className={className}
+      onClick={(e) => e.stopPropagation()}
     >
+      <PromptPopoverHeader>{title}</PromptPopoverHeader>
+      <PromptMenuList>
       {items.map((item) => (
-        <button
+        <PromptMenuItem
           key={item.id}
-          type="button"
+          selected={item.id === selectedId}
+          description={
+            item.description
+              ? `${item.description.slice(0, 60)}${
+                  item.description.length > 60 ? "..." : ""
+                }`
+              : undefined
+          }
           onClick={() => {
             onSelect(item);
             onClose();
           }}
-          className={`w-full text-left px-4 py-2 rounded text-sm transition-all hover:bg-white/10 ${
-            item.id === selectedId
-              ? "text-primary font-bold bg-primary/5"
-              : "text-white font-medium"
-          }`}
         >
-          <div>{item.name}</div>
-          {item.description && (
-            <div className="text-xs text-muted mt-0.5">
-              {item.description.slice(0, 60)}...
-            </div>
-          )}
-        </button>
+          {item.name}
+        </PromptMenuItem>
       ))}
-    </div>
+      </PromptMenuList>
+    </PromptPopover>
   );
 }
 
@@ -317,13 +319,19 @@ const VideoIcon = ({
 // ---------------------------------------------------------------------------
 export default function LipSyncStudio({
   apiKey,
+  onGenerationStart,
+  onGenerationEnd,
   onGenerationComplete,
   onGenerationError,
   historyItems,
   droppedFiles,
   onFilesHandled,
 }) {
-  const PERSIST_KEY = "hg_lipsync_studio_persistent";
+  const LEGACY_PERSIST_KEY = "hg_lipsync_studio_persistent";
+  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
+  useEffect(() => {
+    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
+  }, [PERSIST_KEY]);
 
   // ── Mode & model state ──────────────────────────────────────────────────
   const [inputMode, setInputMode] = useState("image"); // 'image' | 'video'
@@ -522,10 +530,6 @@ export default function LipSyncStudio({
 
   const handlePromptInput = (e) => {
     setPrompt(e.target.value);
-    const el = e.target;
-    el.style.height = "auto";
-    const maxH = window.innerWidth < 768 ? 150 : 250;
-    el.style.height = Math.min(el.scrollHeight, maxH) + "px";
   };
 
   const handleAudioPick = useCallback(
@@ -648,6 +652,7 @@ export default function LipSyncStudio({
       return;
     }
 
+    onGenerationStart?.();
     setIsGenerating(true);
     setGenerateError(null);
 
@@ -691,11 +696,12 @@ export default function LipSyncStudio({
       }
     } catch (e) {
       console.error("[LipSyncStudio]", e);
-      setGenerateError(e.message?.slice(0, 80) ?? "Unknown error");
-      setTimeout(() => setGenerateError(null), 4000);
-      onGenerationError?.(e.message?.slice(0, 120) || "Lip sync generation failed");
+      const errMsg = formatErrorMessage(e, "Lip sync generation failed");
+      if (onGenerationError) onGenerationError(errMsg);
+      else toast.error(errMsg);
     } finally {
       setIsGenerating(false);
+      onGenerationEnd?.();
     }
   };
 
@@ -754,12 +760,12 @@ export default function LipSyncStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col"
+                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
                   src={entry.url}
-                  className="w-full aspect-video object-cover bg-black/40 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setFullscreenUrl(entry.url)}
+                  className="w-full aspect-video object-cover bg-black/40 hover:opacity-80 transition-opacity"
                   controls={false}
                   loop
                   muted
@@ -772,23 +778,11 @@ export default function LipSyncStudio({
                 />
                 
                 {/* Overlay actions */}
-                <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    type="button"
-                    title="Fullscreen"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFullscreenUrl(entry.url);
-                    }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="15 3 21 3 21 9" />
-                      <polyline points="9 21 3 21 3 15" />
-                      <line x1="21" y1="3" x2="14" y2="10" />
-                      <line x1="3" y1="21" x2="10" y2="14" />
-                    </svg>
-                  </button>
+                <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <GenerationCopyButtons
+                    prompt={entry.prompt}
+                    onCopyError={onGenerationError}
+                  />
                   <button
                     type="button"
                     title="Download"
@@ -821,6 +815,28 @@ export default function LipSyncStudio({
                     </svg>
                   </button>
                 </div>
+                <MobileGenerationActions
+                  prompt={entry.prompt}
+                  onCopyError={onGenerationError}
+                  actions={[
+                    {
+                      kind: "download",
+                      label: "Download",
+                      onSelect: () =>
+                        downloadFile(entry.url, `lipsync-${entry.id || idx}.mp4`),
+                    },
+                    {
+                      kind: "delete",
+                      label: "Delete",
+                      danger: true,
+                      onSelect: () => {
+                        if (confirm("Are you sure you want to delete this generated item?")) {
+                          setInternalHistory((prev) => prev.filter((_, i) => i !== idx));
+                        }
+                      },
+                    },
+                  ]}
+                />
 
                 {/* Details */}
                 <div className="p-3 bg-black/80 backdrop-blur-sm border-t border-white/5 flex-1 flex flex-col justify-between gap-2">
@@ -838,22 +854,6 @@ export default function LipSyncStudio({
                         <span className="text-[10px] text-white/40">{entry.resolution}</span>
                       )}
                     </div>
-                    {entry.prompt && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(entry.prompt);
-                          const btn = e.currentTarget;
-                          btn.innerText = "Copied!";
-                          setTimeout(() => { btn.innerText = "Copy"; }, 2000);
-                        }}
-                        className="px-2 py-0.5 bg-white/5 hover:bg-primary/20 hover:text-primary rounded text-[10px] font-medium text-white/70 transition-all border border-white/10"
-                        title="Copy prompt"
-                      >
-                        Copy Prompt
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -907,32 +907,34 @@ export default function LipSyncStudio({
       </div>
 
       {/* ── BOTTOM PROMPT BAR ── */}
-      <div className="absolute bottom-4 w-full max-w-[95%] lg:max-w-4xl z-30 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-        <div className="w-full bg-gradient-to-b from-[#18181c]/90 via-[#0f0f12]/90 to-[#0c0c0e]/95 backdrop-blur-2xl rounded-[2rem] border border-white/[0.08] p-4 flex flex-col gap-3 shadow-[0_15px_50px_rgba(0,0,0,0.8)]">
+      <PromptComposer>
           {/* Mode toggle row */}
-          <div className="flex items-center gap-2 px-3">
-            <button
+          <div className="flex items-center px-1">
+            <PromptSegmentedControl>
+            <PromptSegmentOption
               type="button"
               onClick={switchToImage}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition-all border ${
-                inputMode === "image"
-                  ? "border-[#22d3ee]/60 bg-[#22d3ee]/5 text-[#22d3ee]"
-                  : "border-white/[0.03] bg-white/[0.03] text-white/40 hover:border-white/20 hover:text-white"
-              }`}
+              selected={inputMode === "image"}
             >
-              🖼 Portrait Image
-            </button>
-            <button
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="m21 15-5-5L5 21" />
+              </svg>
+              Portrait Image
+            </PromptSegmentOption>
+            <PromptSegmentOption
               type="button"
               onClick={switchToVideo}
-              className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all border ${
-                inputMode === "video"
-                  ? "border-[#22d3ee]/60 bg-[#22d3ee]/5 text-[#22d3ee]"
-                  : "border-white/[0.03] bg-white/[0.03] text-white/40 hover:border-white/20 hover:text-white"
-              }`}
+              selected={inputMode === "video"}
             >
-              🎬 Video
-            </button>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <rect x="2" y="5" width="15" height="14" rx="2" />
+                <path d="m17 10 5-3v10l-5-3" />
+              </svg>
+              Video
+            </PromptSegmentOption>
+            </PromptSegmentedControl>
           </div>
 
           {/* Uploads row */}
@@ -1020,20 +1022,18 @@ export default function LipSyncStudio({
 
             {/* Prompt textarea */}
             <div className="flex-1 flex flex-col">
-              <textarea
+              <PromptTextarea
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptInput}
                 placeholder="Describe speech style..."
-                className="w-full bg-transparent border-none text-white text-sm placeholder:text-white/20 focus:outline-none resize-none pt-1 leading-relaxed min-h-[40px] max-h-[150px] md:max-h-[250px] overflow-y-auto custom-scrollbar disabled:opacity-40"
-                rows={1}
               />
             </div>
           </div>
 
           {/* Bottom controls row */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-3 border-t border-white/[0.03] relative">
-            <div className="flex items-center gap-2 px-1">
+          <PromptFooter>
+            <PromptControls>
               {/* Model selector */}
               <div className="relative">
                 <button
@@ -1045,35 +1045,29 @@ export default function LipSyncStudio({
                       openDropdown === "model" ? null : "model",
                     );
                   }}
-                  className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                  className={promptControlClassName({
+                    active: openDropdown === "model",
+                  })}
                 >
                   <div className="w-3.5 h-3.5 bg-[#22d3ee] rounded-sm flex items-center justify-center">
                     <span className="text-[9px] font-black text-black">
                       S
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
+                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedModel?.name ?? "Select model"}
                   </span>
-                  <svg
-                    width="10"
-                    height="10"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    className="opacity-50 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
+                  <PromptChevronIcon />
                 </button>
                 <Dropdown
                   isOpen={openDropdown === "model"}
+                  title="Model"
                   items={modelDropdownItems}
                   selectedId={selectedModelId}
                   onSelect={handleModelSelect}
                   onClose={() => setOpenDropdown(null)}
                   anchorRef={modelBtnRef}
+                  className="w-80 max-w-[calc(100vw-3rem)]"
                 />
               </div>
 
@@ -1089,14 +1083,18 @@ export default function LipSyncStudio({
                         openDropdown === "resolution" ? null : "resolution",
                       );
                     }}
-                    className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                    className={promptControlClassName({
+                      active: openDropdown === "resolution",
+                    })}
                   >
-                    <span className="text-xs font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
+                    <PromptQualityIcon />
+                    <span className={PROMPT_CONTROL_LABEL_CLASS}>
                       {selectedResolution}
                     </span>
                   </button>
                   <Dropdown
                     isOpen={openDropdown === "resolution"}
+                    title="Resolution"
                     items={resolutionDropdownItems}
                     selectedId={selectedResolution}
                     onSelect={(item) => setSelectedResolution(item.id)}
@@ -1105,14 +1103,12 @@ export default function LipSyncStudio({
                   />
                 </div>
               )}
-            </div>
+            </PromptControls>
 
             {/* Generate button */}
-            <button
-              type="button"
+            <PromptAction
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="bg-[#22d3ee] text-black px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#22d3ee]/20 hover:shadow-[#22d3ee]/35 border border-[#22d3ee]/10 z-10"
             >
               {isGenerating ? (
                 <>
@@ -1121,17 +1117,14 @@ export default function LipSyncStudio({
                   </span>{" "}
                   Generating...
                 </>
-              ) : generateError ? (
-                `Error: ${generateError}`
               ) : (
                 <>
                   <span>Sync Lip</span>
                 </>
               )}
-            </button>
-          </div>
-        </div>
-      </div>
+            </PromptAction>
+          </PromptFooter>
+      </PromptComposer>
 
       {/* ── FULLSCREEN MEDIA MODAL ── */}
       {fullscreenUrl && (
@@ -1162,6 +1155,7 @@ export default function LipSyncStudio({
           />
         </div>
       )}
+      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

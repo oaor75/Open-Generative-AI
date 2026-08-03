@@ -125,27 +125,40 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
   );
 }
 
-export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggleHeader }) {
+export default function WorkflowStudio({
+  apiKey,
+  isHeaderVisible = true,
+  onToggleHeader,
+  onGenerationStart,
+  onGenerationEnd,
+  onGenerationComplete,
+  onGenerationError,
+}) {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug || [];
   const idFromParams = params?.id;     // exists on /workflow/[id]/[tab] route
-  const tabFromParams = params?.tab;   // exists on /workflow/[id]/[tab] route
-  
+  const tabFromParams = params?.tab;   // string on /workflow/[id]/[tab]; array on the [[...tab]] catch-all
+  // Catch-all routes (/studio/[brandSlug]/[[...tab]], /open-generative-ai/[[...tab]]) expose the
+  // whole remaining path as params.tab (an array) — NOT params.slug, which doesn't exist on either
+  // route and previously made this whole fallback branch permanently dead.
+  const catchAllSegments = Array.isArray(tabFromParams) ? tabFromParams : [];
+
   // Robustly extract ID and Tab from either route structure
   const getWorkflowInfo = useCallback(() => {
-    // Priority 1: Dedicated /workflow/[id]/[tab] route  
+    // Priority 1: Dedicated /workflow/[id]/[tab] route
     if (idFromParams) {
       return { id: idFromParams, tab: tabFromParams || null };
     }
-    // Priority 2: Catch-all /studio/[[...slug]] route
-    const wfIndex = slug.findIndex(s => s === 'workflows' || s === 'workflow');
+    // Priority 2: Catch-all studio shell route — also recognizes the singular
+    // "workflow" segment used by the standalone /workflow/[id]/[tab] URL scheme,
+    // since a white-label custom domain's middleware rewrite lands here too.
+    const wfIndex = catchAllSegments.findIndex(s => s === 'workflows' || s === 'workflow');
     if (wfIndex === -1) return { id: null, tab: null };
     return {
-      id: slug[wfIndex + 1] || null,
-      tab: slug[wfIndex + 2] || null
+      id: catchAllSegments[wfIndex + 1] || null,
+      tab: catchAllSegments[wfIndex + 2] || null
     };
-  }, [slug, idFromParams, tabFromParams]);
+  }, [catchAllSegments, idFromParams, tabFromParams]);
 
   const { id: urlWorkflowId, tab: urlTab } = getWorkflowInfo();
 
@@ -258,7 +271,10 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
             data: { nodes: [] },
           };
           const response = await createWorkflow(apiKey, payload);
-          // Route to /workflow/[id] so useParams().id works in the builder library
+          // Route to /workflow/[id] so useParams().id works in the builder library.
+          // That page has no white-label session of its own, so hand off our token
+          // via sessionStorage — it reads "wl_workflow_token" on mount.
+          if (apiKey) sessionStorage.setItem("wl_workflow_token", apiKey);
           router.push(`/workflow/${response.workflow_id}/builder`);
           return;
         }
@@ -398,6 +414,7 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
     e.preventDefault();
     if (isExecuting) return;
 
+    onGenerationStart?.();
     setIsExecuting(true);
     setError(null);
     setResult(null);
@@ -414,11 +431,18 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
 
       const data = await executeWorkflow(apiKey, selectedWorkflow.id, inputs);
       setResult(data);
+      onGenerationComplete?.({
+        url: data?.url || data?.output?.url || data?.outputs?.[0]?.url || null,
+        type: "workflow",
+      });
     } catch (err) {
       console.error("Execution failed:", err);
-      setError(err.message || "Execution failed");
+      const message = err.message || "Execution failed";
+      setError(message);
+      onGenerationError?.(message);
     } finally {
       setIsExecuting(false);
+      onGenerationEnd?.();
     }
   };
 
@@ -469,7 +493,10 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
                   <button
                     onClick={() => {
                         setActiveSubTab("builder");
-                        if (selectedWorkflow?.id) router.push(`/workflow/${selectedWorkflow.id}/builder`);
+                        if (selectedWorkflow?.id) {
+                          if (apiKey) sessionStorage.setItem("wl_workflow_token", apiKey);
+                          router.push(`/workflow/${selectedWorkflow.id}/builder`);
+                        }
                     }}
                     type="button"
                     className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${
@@ -808,6 +835,7 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
             <div className="flex-1 relative bg-[#050505]">
               {nodeSchemas && workflowDef ? (
                 <WorkflowUI
+                  apiKey={apiKey}
                   workflowId={selectedWorkflow?.id}
                   initialNodeSchemas={nodeSchemas}
                   initialWorkflowData={{
@@ -815,6 +843,10 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
                     // Inject ID to prevent builder from assuming this is a new unsaved flow
                     workflow_id: selectedWorkflow?.id
                   }}
+                  onGenerationStart={onGenerationStart}
+                  onGenerationEnd={onGenerationEnd}
+                  onGenerationComplete={onGenerationComplete}
+                  onGenerationError={onGenerationError}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">

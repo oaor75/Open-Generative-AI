@@ -5,14 +5,43 @@ import { CreativeCanvas } from 'design-agent';
 
 import { getUserBalance } from '../muapi';
 
-export default function DesignAgentStudio({ apiKey, isHeaderVisible, onToggleHeader }) {
+export default function DesignAgentStudio({
+  apiKey,
+  userEmail,
+  balance,
+  isHeaderVisible,
+  onToggleHeader,
+  onGenerationStart,
+  onGenerationEnd,
+  onGenerationComplete,
+  onGenerationError,
+}) {
   const [userData, setUserData] = useState(null);
 
-  useEffect(() => {
+  // Written synchronously during render (not inside an effect below) so it's already in
+  // localStorage before CreativeCanvas's own mount effects read it — passive effects run
+  // child-before-parent within a commit, so setting this from *our* useEffect ran after
+  // CreativeCanvas's first sessions/agent-skills fetch had already gone out unauthenticated.
+  if (typeof window !== 'undefined' && apiKey) {
     sessionStorage.setItem("fromDesignAgent", "true");
-    if (!apiKey) return;
     localStorage.setItem("token", apiKey);
-    
+  }
+
+  useEffect(() => {
+    if (!apiKey) return;
+
+    // White-label shells already know the end user's identity/credit balance (fetched via
+    // /api/whitelabel/balance) and pass them in directly — GET /account/balance explicitly
+    // 403s for white-label end users, so getUserBalance() below must stay BYOK-only.
+    if (userEmail !== undefined || balance !== undefined) {
+      setUserData({
+        username: userEmail?.split('@')[0] || 'Studio User',
+        email: userEmail,
+        balance: balance || 0,
+      });
+      return;
+    }
+
     const fetchUser = async () => {
       try {
         const data = await getUserBalance(apiKey);
@@ -27,7 +56,7 @@ export default function DesignAgentStudio({ apiKey, isHeaderVisible, onToggleHea
     };
 
     fetchUser();
-  }, [apiKey]);
+  }, [apiKey, userEmail, balance]);
 
   return (
     <div className="h-full w-full bg-black overflow-hidden design-agent-studio">
@@ -38,6 +67,10 @@ export default function DesignAgentStudio({ apiKey, isHeaderVisible, onToggleHea
         theme="dark"
         onToggleHeader={onToggleHeader}
         isHeaderVisible={isHeaderVisible}
+        onGenerationStart={onGenerationStart}
+        onGenerationEnd={onGenerationEnd}
+        onGenerationComplete={onGenerationComplete}
+        onGenerationError={onGenerationError}
       />
     </div>
   );

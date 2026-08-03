@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { generateImage, generateI2I, uploadFile } from "../muapi.js";
+import { formatErrorMessage } from "../utils/formatError.js";
+import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import DrawModal from "./DrawModal.jsx";
+import MobileGenerationActions, {
+  GenerationCopyButtons,
+} from "./MobileGenerationActions.jsx";
 import {
   t2iModels,
   i2iModels,
@@ -17,6 +23,24 @@ import {
   getDefaultEffectForI2IModel,
   getI2IModelById,
 } from "../models.js";
+import {
+  PROMPT_CONTROL_LABEL_CLASS,
+  PROMPT_MEDIA_PREVIEW_CLASS,
+  PromptAspectRatioIcon,
+  PromptAction,
+  PromptChevronIcon,
+  PromptComposer,
+  PromptControls,
+  PromptFooter,
+  PromptMenuItem,
+  PromptMenuList,
+  PromptPopover,
+  PromptPopoverHeader,
+  PromptQualityIcon,
+  PromptTextarea,
+  promptControlClassName,
+  promptMediaButtonClassName,
+} from "./prompt/PromptComposer.jsx";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -338,21 +362,19 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
           e.stopPropagation();
           setPanelOpen((o) => !o);
         }}
-        className={`w-12 h-12 shrink-0 rounded-xl border border-dashed transition-all flex items-center justify-center relative overflow-hidden bg-white/[0.02] hover:bg-white/5 group ${
-          hasSelection
-            ? "border-[#22d3ee]/40 hover:border-[#22d3ee]/60"
-            : "border-white/10 hover:border-[#22d3ee]/40"
-        }`}
+        className={promptMediaButtonClassName({
+          active: hasSelection,
+        })}
       >
         {triggerContent}
       </button>
 
       {/* Panel */}
       {panelOpen && (
-        <div
+        <PromptPopover
           ref={panelRef}
           onClick={(e) => e.stopPropagation()}
-          className="absolute z-50 bottom-[calc(100%+8px)] left-0 bg-[#111] rounded-xl p-3 shadow-4xl border border-white/10 w-96"
+          className="w-96 max-w-[calc(100vw-2rem)]"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-1 pb-3 mb-2 border-b border-white/5">
@@ -522,7 +544,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
               </button>
             </div>
           )}
-        </div>
+        </PromptPopover>
       )}
     </div>
   );
@@ -804,38 +826,22 @@ function ModelDropdown({ models, selectedModel, onSelect, onClose }) {
 function SimpleDropdown({ title, options, selected, onSelect, onClose }) {
   return (
     <>
-      <div className="text-xs font-semibold text-white/30 uppercase tracking-wider pb-2 border-b border-white/[0.05] mb-2 px-1">
-        {title}
-      </div>
-      <div className="flex flex-col gap-1">
+      <PromptPopoverHeader>{title}</PromptPopoverHeader>
+      <PromptMenuList>
         {options.map((opt) => (
-          <div
+          <PromptMenuItem
             key={opt}
+            selected={selected === opt}
             onClick={(e) => {
               e.stopPropagation();
               onSelect(opt);
               onClose();
             }}
-            className="flex items-center justify-between p-2.5 px-3 hover:bg-[#22d3ee]/10 hover:text-white rounded-xl cursor-pointer transition-all group"
           >
-            <span className="text-xs font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
-              {opt}
-            </span>
-            {selected === opt && (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#22d3ee"
-                strokeWidth="4.5"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            )}
-          </div>
+            {opt}
+          </PromptMenuItem>
         ))}
-      </div>
+      </PromptMenuList>
     </>
   );
 }
@@ -844,13 +850,19 @@ function SimpleDropdown({ title, options, selected, onSelect, onClose }) {
 
 export default function ImageStudio({
   apiKey,
+  onGenerationStart,
+  onGenerationEnd,
   onGenerationComplete,
   onGenerationError,
   historyItems,
   droppedFiles,
   onFilesHandled,
 }) {
-  const PERSIST_KEY = "hg_image_studio_persistent";
+  const LEGACY_PERSIST_KEY = "hg_image_studio_persistent";
+  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
+  useEffect(() => {
+    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
+  }, [PERSIST_KEY]);
 
   // ── Model / mode state ──────────────────────────────────────────────────
   const [imageMode, setImageMode] = useState(false); // false=t2i, true=i2i
@@ -930,13 +942,6 @@ export default function ImageStudio({
   }, []);
 
   // ── Adjust height on load ────────────────────────────────────────────────
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      handleTextareaInput();
-    }, 150);
-    return () => clearTimeout(timer);
-  }, []);
-
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1040,14 +1045,6 @@ export default function ImageStudio({
   const showEffectBtn = currentEffects.length > 0;
 
   // ── Textarea auto-resize ─────────────────────────────────────────────────
-  const handleTextareaInput = () => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    const maxHeight = window.innerWidth < 768 ? 150 : 250;
-    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
-  };
-
   // ── Upload picker callbacks ──────────────────────────────────────────────
   const handleUploadSelect = useCallback(
     ({ url, urls }) => {
@@ -1224,6 +1221,7 @@ export default function ImageStudio({
       }
     }
 
+    onGenerationStart?.();
     setGenerating(true);
     setGenerateError(null);
 
@@ -1279,11 +1277,12 @@ export default function ImageStudio({
       });
     } catch (e) {
       console.error("[ImageStudio] Generation failed:", e);
-      setGenerateError(e.message.slice(0, 80));
-      setTimeout(() => setGenerateError(null), 4000);
-      onGenerationError?.(e.message?.slice(0, 120) || "Image generation failed");
+      const errMsg = formatErrorMessage(e, "Image generation failed");
+      if (onGenerationError) onGenerationError(errMsg);
+      else toast.error(errMsg);
     } finally {
       setGenerating(false);
+      onGenerationEnd?.();
     }
   };
 
@@ -1305,33 +1304,22 @@ export default function ImageStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col"
+                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                onClick={() => setFullscreenUrl(entry.url)}
               >
                 <img
                   src={entry.url}
                   alt={entry.prompt?.substring(0, 30) || "Generated image"}
-                  className="w-full aspect-square object-cover bg-black/40 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setFullscreenUrl(entry.url)}
+                  className="w-full aspect-square object-cover bg-black/40 hover:opacity-80 transition-opacity"
                 />
                 
                 {/* Overlay actions */}
-                <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    type="button"
-                    title="Fullscreen"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFullscreenUrl(entry.url);
-                    }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="15 3 21 3 21 9" />
-                      <polyline points="9 21 3 21 3 15" />
-                      <line x1="21" y1="3" x2="14" y2="10" />
-                      <line x1="3" y1="21" x2="10" y2="14" />
-                    </svg>
-                  </button>
+                <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <GenerationCopyButtons
+                    prompt={entry.prompt}
+                    imageUrl={entry.url}
+                    onCopyError={onGenerationError}
+                  />
                   <button
                     type="button"
                     title="Download"
@@ -1364,6 +1352,29 @@ export default function ImageStudio({
                     </svg>
                   </button>
                 </div>
+                <MobileGenerationActions
+                  prompt={entry.prompt}
+                  imageUrl={entry.url}
+                  onCopyError={onGenerationError}
+                  actions={[
+                    {
+                      kind: "download",
+                      label: "Download",
+                      onSelect: () =>
+                        downloadImage(entry.url, `muapi-${entry.id || idx}.jpg`),
+                    },
+                    {
+                      kind: "delete",
+                      label: "Delete",
+                      danger: true,
+                      onSelect: () => {
+                        if (confirm("Are you sure you want to delete this generated item?")) {
+                          setLocalHistory((prev) => prev.filter((_, i) => i !== idx));
+                        }
+                      },
+                    },
+                  ]}
+                />
 
                 {/* Prompt & Details */}
                 <div className="p-3 bg-black/80 backdrop-blur-sm border-t border-white/5 flex-1 flex flex-col justify-between gap-2">
@@ -1377,22 +1388,6 @@ export default function ImageStudio({
                       </span>
                       <span className="text-[10px] text-white/40">{entry.aspect_ratio}</span>
                     </div>
-                    {entry.prompt && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(entry.prompt);
-                          const btn = e.currentTarget;
-                          btn.innerText = "Copied!";
-                          setTimeout(() => { btn.innerText = "Copy"; }, 2000);
-                        }}
-                        className="px-2 py-0.5 bg-white/5 hover:bg-primary/20 hover:text-primary rounded text-[10px] font-medium text-white/70 transition-all border border-white/10"
-                        title="Copy prompt"
-                      >
-                        Copy Prompt
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1446,17 +1441,13 @@ export default function ImageStudio({
       </div>
 
       {/* ── BOTTOM PROMPT BAR ── */}
-      <div 
-        className="absolute bottom-4 w-full max-w-[95%] lg:max-w-4xl z-30 animate-fade-in-up" 
-        style={{ animationDelay: "0.2s" }}
-      >
-        <div className="w-full bg-gradient-to-b from-[#18181c]/90 via-[#0f0f12]/90 to-[#0c0c0e]/95 backdrop-blur-2xl rounded-[2rem] border border-white/[0.08] p-4 flex flex-col gap-3 shadow-[0_15px_50px_rgba(0,0,0,0.8)]">
+      <PromptComposer>
           {/* Top row: upload picker + textarea */}
           <div className="flex flex-col gap-3">
             {/* Inline list of uploaded files */}
             <div className="flex items-center gap-2.5 flex-wrap">
               {uploadedImageUrls && uploadedImageUrls.length > 0 && uploadedImageUrls.map((url, idx) => (
-                <div key={idx} className="relative w-12 h-12 rounded-xl border border-white/10 overflow-hidden shadow-md group">
+                <div key={url} className={PROMPT_MEDIA_PREVIEW_CLASS}>
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -1499,21 +1490,18 @@ export default function ImageStudio({
             </div>
 
             {/* Input prompt text area */}
-            <textarea
+            <PromptTextarea
               ref={textareaRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              onInput={handleTextareaInput}
               placeholder={placeholderText}
-              rows={1}
-              className="w-full bg-transparent border-none text-white text-sm placeholder:text-white/20 focus:outline-none resize-none pt-1 leading-relaxed min-h-[40px] max-h-[150px] md:max-h-[250px] overflow-y-auto custom-scrollbar"
             />
           </div>
 
           {/* Bottom row: controls + generate */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-3 border-t border-white/[0.03] relative">
+          <PromptFooter>
             {/* Left controls */}
-            <div className="flex items-center gap-2 relative flex-wrap pb-1 md:pb-0">
+            <PromptControls ref={dropdownRef}>
               {/* Model button */}
               <div className="relative">
                 <button
@@ -1522,7 +1510,9 @@ export default function ImageStudio({
                     e.stopPropagation();
                     setDropdownOpen((o) => (o === "model" ? null : "model"));
                   }}
-                  className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                  className={promptControlClassName({
+                    active: dropdownOpen === "model",
+                  })}
                 >
                   <div className="w-4 h-4 rounded overflow-hidden shrink-0 flex items-center justify-center bg-white/5">
                     {(() => {
@@ -1539,35 +1529,25 @@ export default function ImageStudio({
                       );
                     })()}
                   </div>
-                  <span className="text-xs font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
+                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedModelName}
                   </span>
-                  <svg
-                    width="10"
-                    height="10"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    className="opacity-50 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
+                  <PromptChevronIcon />
                 </button>
 
                 {dropdownOpen === "model" && (
-                  <div
-                    ref={dropdownRef}
+                  <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute bottom-[calc(100%+12px)] left-0 z-50 bg-[#0c0c0f]/95 rounded-xl p-3.5 shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/[0.08] backdrop-blur-2xl w-[calc(100vw-2rem)] md:w-[480px] max-w-md md:max-w-none"
+                    className="w-[calc(100vw-2rem)] md:w-[480px] max-w-md md:max-w-none max-h-[70vh]"
                   >
+                    <PromptPopoverHeader>Model</PromptPopoverHeader>
                     <ModelDropdown
                       models={currentModels}
                       selectedModel={selectedModelId}
                       onSelect={handleModelSelect}
                       onClose={() => setDropdownOpen(null)}
                     />
-                  </div>
+                  </PromptPopover>
                 )}
               </div>
 
@@ -1579,20 +1559,19 @@ export default function ImageStudio({
                     e.stopPropagation();
                     setDropdownOpen((o) => (o === "ar" ? null : "ar"));
                   }}
-                  className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                  className={promptControlClassName({
+                    active: dropdownOpen === "ar",
+                  })}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40 text-white">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  </svg>
-                  <span className="text-[11px] font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
+                  <PromptAspectRatioIcon />
+                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedAr}
                   </span>
                 </button>
 
                 {dropdownOpen === "ar" && (
-                  <div
+                  <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute bottom-[calc(100%+12px)] left-0 z-50 bg-[#0c0c0f]/95 rounded-xl p-3.5 max-h-[40vh] overflow-y-auto custom-scrollbar shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/[0.08] backdrop-blur-2xl min-w-[160px]"
                   >
                     <SimpleDropdown
                       title="Aspect Ratio"
@@ -1601,7 +1580,7 @@ export default function ImageStudio({
                       onSelect={(val) => setSelectedAr(val)}
                       onClose={() => setDropdownOpen(null)}
                     />
-                  </div>
+                  </PromptPopover>
                 )}
               </div>
 
@@ -1614,20 +1593,19 @@ export default function ImageStudio({
                       e.stopPropagation();
                       setDropdownOpen((o) => (o === "quality" ? null : "quality"));
                     }}
-                    className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                    className={promptControlClassName({
+                      active: dropdownOpen === "quality",
+                    })}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-40 text-white">
-                      <polygon points="12 2 22 12 12 22 2 12" />
-                    </svg>
-                    <span className="text-[11px] font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
+                    <PromptQualityIcon />
+                    <span className={PROMPT_CONTROL_LABEL_CLASS}>
                       {selectedQuality || currentResolutions[0]}
                     </span>
                   </button>
 
                   {dropdownOpen === "quality" && (
-                    <div
+                    <PromptPopover
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute bottom-[calc(100%+12px)] left-0 z-50 bg-[#0c0c0f]/95 rounded-xl p-3.5 max-h-[40vh] overflow-y-auto custom-scrollbar shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/[0.08] backdrop-blur-2xl min-w-[160px]"
                     >
                       <SimpleDropdown
                         title="Resolution"
@@ -1636,7 +1614,7 @@ export default function ImageStudio({
                         onSelect={(val) => setSelectedQuality(val)}
                         onClose={() => setDropdownOpen(null)}
                       />
-                    </div>
+                    </PromptPopover>
                   )}
                 </div>
               )}
@@ -1650,20 +1628,22 @@ export default function ImageStudio({
                       e.stopPropagation();
                       setDropdownOpen((o) => (o === "effect" ? null : "effect"));
                     }}
-                    className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                    className={promptControlClassName({
+                      active: dropdownOpen === "effect",
+                    })}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40 text-white">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40 text-white">
                       <path d="M5 3l14 9-14 9V3z" />
                     </svg>
-                    <span className="text-[11px] font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors max-w-[140px] truncate">
+                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} max-w-[140px] truncate`}>
                       {selectedEffect || "Effect"}
                     </span>
                   </button>
 
                   {dropdownOpen === "effect" && (
-                    <div
+                    <PromptPopover
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute bottom-[calc(100%+12px)] left-0 z-50 bg-[#0c0c0f]/95 rounded-xl p-3.5 max-h-[40vh] overflow-y-auto custom-scrollbar shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/[0.08] backdrop-blur-2xl min-w-[200px]"
+                      className="min-w-[200px]"
                     >
                       <SimpleDropdown
                         title="Effect Type"
@@ -1672,13 +1652,13 @@ export default function ImageStudio({
                         onSelect={(val) => setSelectedEffect(val)}
                         onClose={() => setDropdownOpen(null)}
                       />
-                    </div>
+                    </PromptPopover>
                   )}
                 </div>
               )}
 
               {/* Batch size stepper */}
-              <div className="h-[34px] flex items-center gap-2 bg-[#16161a]/60 rounded-md px-2.5 border border-white/[0.06] shadow-inner select-none">
+              <div className={promptControlClassName({ compact: true, className: "select-none" })}>
                 <button
                   type="button"
                   onClick={() => setBatchSize(prev => Math.max(1, prev - 1))}
@@ -1686,7 +1666,7 @@ export default function ImageStudio({
                 >
                   -
                 </button>
-                <span className="text-[11px] font-black text-white/70 min-w-[24px] text-center">
+                <span className="text-xs font-semibold text-white/70 min-w-[24px] text-center">
                   {batchSize}/4
                 </span>
                 <button
@@ -1701,42 +1681,37 @@ export default function ImageStudio({
               {/* Draw button */}
               <button
                 type="button"
-                className="h-[34px] flex items-center gap-2 px-3.5 bg-[#16161a]/60 hover:bg-[#202026]/80 rounded-md transition-all border border-white/[0.06] group whitespace-nowrap shadow-inner"
+                className={promptControlClassName()}
                 onClick={() => setIsDrawModalOpen(true)}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-40 text-white group-hover:text-[#22d3ee] transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-40 text-white group-hover:text-[#22d3ee] transition-colors">
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
-                <span className="text-[11px] font-semibold text-white/70 group-hover:text-[#22d3ee] transition-colors">
+                <span className={PROMPT_CONTROL_LABEL_CLASS}>
                   Draw
                 </span>
               </button>
-            </div>
+            </PromptControls>
 
             {/* Generate button */}
-            <button
-              type="button"
+            <PromptAction
               onClick={handleGenerate}
               disabled={generating}
-              className="bg-[#22d3ee] text-black px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#22d3ee]/20 hover:shadow-[#22d3ee]/35 border border-[#22d3ee]/10 z-10"
             >
               {generating ? (
                 <>
                   <span className="animate-spin inline-block text-black">◌</span>
                   Generating...
                 </>
-              ) : generateError ? (
-                `Error: ${generateError}`
               ) : (
                 <>
-                  <span>Generate ✦ {batchSize}</span>
+                  <span>Generate ✦</span>
                 </>
               )}
-            </button>
-          </div>
-        </div>
-      </div>
+            </PromptAction>
+          </PromptFooter>
+      </PromptComposer>
 
       {/* ── FULLSCREEN IMAGE MODAL ── */}
       {fullscreenUrl && (
@@ -1774,6 +1749,7 @@ export default function ImageStudio({
         batchSize={1}
         onAddHistoryItem={addToHistory}
       />
+      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

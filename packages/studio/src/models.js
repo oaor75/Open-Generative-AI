@@ -7033,6 +7033,61 @@ export const t2vModels = [
     "provider_name": "ByteDance"
   },
   {
+    "id": "seedance-2.5-text-to-video-480p",
+    "name": "Seedance 2.5 480p",
+    "endpoint": "seedance-2.5-text-to-video-480p",
+    "family": "seedance-2.5",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "A cinematic tracking shot through a city park after rain, soft cloudy light, wet pavement reflections, smooth camera movement."
+        ],
+        "description": "Text prompt describing the video scene and motion.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 30,
+        "step": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Random seed for reproducible generation. Use -1 for random.",
+        "examples": [
+          42
+        ]
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "ByteDance"
+  },
+  {
     "id": "seedance-2-mini-text-to-video",
     "name": "Seedance 2 Mini",
     "endpoint": "seedance-2-mini-text-to-video",
@@ -9886,6 +9941,7 @@ export const i2iModels = [
     "id": "bytedance-seedream-v4-edit",
     "name": "Seedream 4 Edit",
     "endpoint": "bytedance-seedream-edit-v4",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -9957,6 +10013,7 @@ export const i2iModels = [
     "id": "bytedance-seedream-v5.0-edit",
     "name": "Seedream 5.0 Edit",
     "endpoint": "seedream-5.0-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -10017,6 +10074,7 @@ export const i2iModels = [
     "id": "qwen-image-2.0-edit",
     "name": "Qwen Image 2.0 Edit",
     "endpoint": "qwen-image-2.0-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "description": "A description of the edits you want to make.",
@@ -10065,6 +10123,7 @@ export const i2iModels = [
     "id": "qwen-image-2.0-pro-edit",
     "name": "Qwen Image 2.0 Pro Edit",
     "endpoint": "qwen-image-2.0-pro-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "description": "A description of the edits you want to make.",
@@ -10113,6 +10172,7 @@ export const i2iModels = [
     "id": "flux-2-klein-4b-turbo-edit",
     "name": "Flux 2 Klein 4B Turbo Edit",
     "endpoint": "flux-2-klein-4b-turbo-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10161,6 +10221,7 @@ export const i2iModels = [
     "id": "flux-2-klein-9b-turbo-edit",
     "name": "Flux 2 Klein 9B Turbo Edit",
     "endpoint": "flux-2-klein-9b-turbo-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10272,6 +10333,7 @@ export const i2iModels = [
     "id": "seedance-2-character",
     "name": "Seedance 2 Character",
     "endpoint": "seedance-2-character",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -10314,6 +10376,7 @@ export const i2iModels = [
     "id": "wan2.7-image-edit",
     "name": "Wan 2.7 Image Edit",
     "endpoint": "wan2.7-image-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10364,6 +10427,7 @@ export const i2iModels = [
     "id": "wan2.7-image-edit-pro",
     "name": "Wan 2.7 Image Edit Pro",
     "endpoint": "wan2.7-image-edit-pro",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10414,6 +10478,7 @@ export const i2iModels = [
     "id": "flux-2-klein-4b-edit-lora",
     "name": "Flux 2 Klein 4B Edit LoRA",
     "endpoint": "flux-2-klein-4b-edit-lora",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10497,6 +10562,7 @@ export const i2iModels = [
     "id": "flux-2-klein-9b-edit-lora",
     "name": "Flux 2 Klein 9B Edit LoRA",
     "endpoint": "flux-2-klein-9b-edit-lora",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10580,6 +10646,7 @@ export const i2iModels = [
     "id": "kling-o3-image-edit",
     "name": "Kling O3 Image Edit",
     "endpoint": "kling-o3-image-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "examples": [
@@ -10652,6 +10719,7 @@ export const i2iModels = [
     "id": "nano-banana-2-lite-edit",
     "name": "Nano Banana 2 Lite Edit",
     "endpoint": "nano-banana-2-lite-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -10703,6 +10771,7 @@ export const i2iModels = [
     "id": "bytedance-seedream-5.0-pro-edit",
     "name": "Seedream 5.0 Pro Edit",
     "endpoint": "seedream-5.0-pro-edit",
+    "imageField": "images_list",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -18208,6 +18277,398 @@ export const i2vModels = [
         "name": "camera_fixed",
         "description": "Whether to fix the camera position.",
         "default": false
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "ByteDance"
+  },
+  {
+    "id": "seedance-2.5-image-to-video-480p",
+    "name": "Seedance 2.5 480p",
+    "endpoint": "seedance-2.5-image-to-video-480p",
+    "family": "seedance-2.5",
+    "imageField": "image_url",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Animate the park scene with gentle wind moving the trees, subtle water ripples, and a slow cinematic push forward."
+        ],
+        "description": "Text prompt describing the desired motion and style.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "image_url": {
+        "examples": [
+          "https://samplelib.com/jpeg/sample-city-park-400x300.jpg"
+        ],
+        "description": "URL of the input image to animate into video.",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 30,
+        "step": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Random seed for reproducible generation. Use -1 for random.",
+        "examples": [
+          42
+        ]
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "ByteDance"
+  },
+  {
+    "id": "seedance-2.5-first-last-frame",
+    "name": "Seedance 2.5 First & Last Frame",
+    "endpoint": "seedance-2.5-first-last-frame",
+    "family": "seedance-2.5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Create a smooth transition from a cloudy sky to a quiet riverside park path, with natural camera movement and realistic lighting."
+        ],
+        "description": "Text prompt describing the transition and motion.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [
+          "https://samplelib.com/jpeg/sample-clouds-400x300.jpg",
+          "https://samplelib.com/jpeg/sample-city-park-400x300.jpg"
+        ],
+        "description": "Exactly 2 images: [first_frame, last_frame].",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "First and Last Frame Images",
+        "name": "images_list",
+        "maxItems": 2
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 30,
+        "step": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Random seed for reproducible generation. Use -1 for random.",
+        "examples": [
+          42
+        ]
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "ByteDance"
+  },
+  {
+    "id": "seedance-2.5-first-last-frame-480p",
+    "name": "Seedance 2.5 First & Last Frame 480p",
+    "endpoint": "seedance-2.5-first-last-frame-480p",
+    "family": "seedance-2.5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Create a smooth transition from a cloudy sky to a quiet riverside park path, with natural camera movement and realistic lighting."
+        ],
+        "description": "Text prompt describing the transition and motion.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [
+          "https://samplelib.com/jpeg/sample-clouds-400x300.jpg",
+          "https://samplelib.com/jpeg/sample-city-park-400x300.jpg"
+        ],
+        "description": "Exactly 2 images: [first_frame, last_frame].",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "First and Last Frame Images",
+        "name": "images_list",
+        "maxItems": 2
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 30,
+        "step": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Random seed for reproducible generation. Use -1 for random.",
+        "examples": [
+          42
+        ]
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "ByteDance"
+  },
+  {
+    "id": "seedance-2.5-omni-reference",
+    "name": "Seedance 2.5 Omni Reference",
+    "endpoint": "seedance-2.5-omni-reference",
+    "family": "seedance-2.5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Create a calm cinematic park sequence. Use the images for environment style, the video clips for camera motion and street rhythm, and the audio as mood reference."
+        ],
+        "description": "Text prompt describing the desired video, referencing the provided images, video clips, and audio as environment, motion, and mood cues.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [],
+        "description": "Reference image URLs. Up to 20 images.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 20
+      },
+      "videos_list": {
+        "examples": [],
+        "description": "Reference video URLs. Up to 6 clips.",
+        "field": "videos_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Videos",
+        "name": "videos_list",
+        "maxItems": 6
+      },
+      "audios_list": {
+        "examples": [],
+        "description": "Reference audio URLs. Up to 6 files.",
+        "field": "audios_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Audio",
+        "name": "audios_list",
+        "maxItems": 6
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 30,
+        "step": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Random seed for reproducible generation. Use -1 for random.",
+        "examples": [
+          42
+        ]
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "ByteDance"
+  },
+  {
+    "id": "seedance-2.5-omni-reference-480p",
+    "name": "Seedance 2.5 Omni Reference 480p",
+    "endpoint": "seedance-2.5-omni-reference-480p",
+    "family": "seedance-2.5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Create a calm cinematic park sequence. Use the images for environment style, the video clips for camera motion and street rhythm, and the audio as mood reference."
+        ],
+        "description": "Text prompt describing the desired video, referencing the provided images, video clips, and audio as environment, motion, and mood cues.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [],
+        "description": "Reference image URLs. Up to 20 images.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 20
+      },
+      "videos_list": {
+        "examples": [],
+        "description": "Reference video URLs. Up to 6 clips.",
+        "field": "videos_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Videos",
+        "name": "videos_list",
+        "maxItems": 6
+      },
+      "audios_list": {
+        "examples": [],
+        "description": "Reference audio URLs. Up to 6 files.",
+        "field": "audios_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Audio",
+        "name": "audios_list",
+        "maxItems": 6
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 30,
+        "step": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Random seed for reproducible generation. Use -1 for random.",
+        "examples": [
+          42
+        ]
       }
     },
     "provider": "bytedance",

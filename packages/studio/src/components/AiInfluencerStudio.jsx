@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { generateImage } from "../muapi.js";
+import { formatErrorMessage } from "../utils/formatError.js";
+import MobileGenerationActions, {
+  GenerationCopyButtons,
+} from "./MobileGenerationActions.jsx";
 
 const CDN = "https://cdn.muapi.ai/influencer";
 
@@ -330,7 +335,15 @@ function HoverPill({ label, img, onClick }) {
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
-export default function AiInfluencerStudio({ apiKey, onGenerate, isGenerating: externalIsGenerating }) {
+export default function AiInfluencerStudio({
+  apiKey,
+  onGenerate,
+  onGenerationStart,
+  onGenerationEnd,
+  onGenerationComplete,
+  onGenerationError,
+  isGenerating: externalIsGenerating,
+}) {
   const [activeTab, setActiveTab] = useState("face");
 
   const [selectedOptions, setSelectedOptions] = useState(() => {
@@ -387,6 +400,7 @@ export default function AiInfluencerStudio({ apiKey, onGenerate, isGenerating: e
   // ── Generate ──────────────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (isGenerating) return;
+    onGenerationStart?.();
     setIsGeneratingInternal(true);
     setErrorMsg("");
 
@@ -404,13 +418,22 @@ export default function AiInfluencerStudio({ apiKey, onGenerate, isGenerating: e
       }
       if (res?.url) {
         setCurrentResult(res.url);
-        setHistory((prev) => [{ url: res.url, ts: Date.now() }, ...prev]);
+        setHistory((prev) => [{ url: res.url, prompt, ts: Date.now() }, ...prev]);
         setSelectedHistoryIdx(0);
+        onGenerationComplete?.({
+          url: res.url,
+          model: INFLUENCER_MODEL,
+          prompt,
+          type: "image",
+        });
       }
     } catch (err) {
-      setErrorMsg(err?.message || "Generation failed. Please try again.");
+      const message = formatErrorMessage(err, "Generation failed. Please try again.");
+      if (onGenerationError) onGenerationError(message);
+      else toast.error(message);
     } finally {
       setIsGeneratingInternal(false);
+      onGenerationEnd?.();
     }
   };
 
@@ -720,7 +743,14 @@ export default function AiInfluencerStudio({ apiKey, onGenerate, isGenerating: e
               >
                 <img src={item.url} alt={`Character ${idx + 1}`} className="w-full h-full object-cover" />
                 {/* Download on hover */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
+                <div className="absolute inset-0 hidden md:flex bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity items-end justify-center pb-2">
+                  <div className="absolute right-2 top-2 flex flex-col gap-2">
+                    <GenerationCopyButtons
+                      prompt={item.prompt}
+                      imageUrl={item.url}
+                      onCopyError={onGenerationError}
+                    />
+                  </div>
                   <div
                     role="button"
                     tabIndex={0}
@@ -731,6 +761,18 @@ export default function AiInfluencerStudio({ apiKey, onGenerate, isGenerating: e
                     <DownloadIcon />
                   </div>
                 </div>
+                <MobileGenerationActions
+                  prompt={item.prompt}
+                  imageUrl={item.url}
+                  onCopyError={onGenerationError}
+                  actions={[
+                    {
+                      kind: "download",
+                      label: "Download",
+                      onSelect: () => downloadImg(item.url),
+                    },
+                  ]}
+                />
                 {/* Index badge */}
                 <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[8px] text-gray-300 font-bold">
                   #{history.length - idx}
@@ -740,7 +782,7 @@ export default function AiInfluencerStudio({ apiKey, onGenerate, isGenerating: e
           )}
         </div>
       </div>
-
+      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }
