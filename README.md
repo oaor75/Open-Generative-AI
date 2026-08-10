@@ -7,8 +7,8 @@
 
 **Community:** Join [Discord](https://discord.gg/tANKJkHck) for discussions and support
 
-<p align="center"><a href="https://youtu.be/YhHHut-pDOY"><img src="https://i.ytimg.com/vi/YhHHut-pDOY/maxresdefault.jpg" width="720"></a></p>
-<p align="center"><a href="https://youtu.be/YhHHut-pDOY"><b>▶ Watch: How to Use Free Uncensored AI Image & Video Generator — Open Source (500+ Models) | Open Generative AI</b></a></p>
+<p align="center"><a href="https://youtu.be/Dj5HIHNFkqI"><img src="https://i.ytimg.com/vi/Dj5HIHNFkqI/maxresdefault.jpg" width="720"></a></p>
+<p align="center"><a href="https://youtu.be/Dj5HIHNFkqI"><b>▶ Watch: Seedance 2.5 Uncensored (Spicy) API — How to Access the Unrestricted Model </b></a></p>
 
 <p align="center">
   <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">
@@ -55,6 +55,8 @@ Consumer AI image/video platforms almost all run on paid monthly subscriptions �
 
 > 🆕 **FLUX 3 Python SDK:** [Flux-3-Dev-API](https://github.com/Anil-matcha/Flux-3-Dev-API) — Python wrapper for Black Forest Labs' newly announced FLUX 3 — text-to-image, image-to-image, text-to-video, and image-to-video through one client, including the fast/low-cost Dev variant.
 
+> 🖼️ **Grok Imagine Image 2.0 API:** [Grok-Imagine-Image-2-API](https://github.com/Anil-matcha/Grok-Imagine-Image-2-API) — Python SDK and MCP server for xAI image generation, image editing, and multi-reference workflows through MuAPI.
+
 > 🎬 **FLUX 3 video, specifically:** [flux-3-video-api](https://github.com/SamurAIGPT/flux-3-video-api) — a focused Python wrapper for just the FLUX 3 Text-to-Video and Image-to-Video endpoints, with native synchronized audio.
 
 > 🎓 **Learn to monetize generative AI:** [ai-creator-academy](https://github.com/Anil-matcha/ai-creator-academy) — a free, open-source curriculum teaching creators, freelancers, and agencies how to make money with generative AI image/video/audio tools, covering monetization, pricing, and client delivery — not just how the models work.
@@ -66,6 +68,8 @@ Consumer AI image/video platforms almost all run on paid monthly subscriptions �
 > 🎥 **Seedance 2.5 Python SDK:** [Seedance-2.5-API](https://github.com/SamurAIGPT/Seedance-2.5-API) — Python wrapper for ByteDance's Seedance 2.5 API — text-to-video, image-to-video, realistic human faces, character consistency.
 
 > 🧩 **Seedance 2.5 ComfyUI pack:** [seedance2.5-comfyui](https://github.com/Anil-matcha/seedance2.5-comfyui) — native ComfyUI nodes and example workflows for the same MuAPI video model.
+
+> 🤖 **Seedance MCP servers:** [seedance-2-mcp](https://github.com/Anil-matcha/seedance-2-mcp) and [seedance-2.5-mcp](https://github.com/Anil-matcha/seedance-2.5-mcp) — focused MCP tools for driving Seedance 2 and Seedance 2.5 from Claude, Cursor, and other AI assistants.
 
 > 🍌 **Claude Fable 5 use cases + 20% off on MuAPI:** [awesome-claude-fable-5](https://github.com/Anil-matcha/awesome-claude-fable-5) — 60 curated real-world use cases, prompts, and benchmarks for Claude Fable 5, with **20% off Fable 5 access** via [MuAPI](https://muapi.ai/pricing?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai).
 
@@ -82,6 +86,7 @@ Consumer AI image/video platforms almost all run on paid monthly subscriptions �
 - [awesome-ai-video-models](https://github.com/Anil-matcha/awesome-ai-video-models) — compare AI video models by API, price & speed
 - [awesome-ai-image-models](https://github.com/Anil-matcha/awesome-ai-image-models) — compare AI image models by API, price & quality
 - [awesome-flux-3-api-prompts](https://github.com/Anil-matcha/awesome-flux-3-api-prompts) — FLUX 3 API guide, prompts, and parameters
+- [wan-3.0-comfyui](https://github.com/Anil-matcha/wan-3.0-comfyui) — ComfyUI custom nodes for Wan 3.0 text-to-image, image edit, text-to-video, and image-to-video via MuAPI.
 
 ## 🌐 Try it Online — No Install Required
 
