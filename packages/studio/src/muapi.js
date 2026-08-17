@@ -102,6 +102,20 @@ export async function generateI2I(apiKey, params) {
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 60);
 }
 
+export async function decomposeLayers(apiKey, params) {
+    const endpoint = 'bytedance-seedream-5.0-pro-layer';
+    const payload = {
+        image_url: params.image_url,
+        prompt: params.prompt || '',
+        resolution: params.resolution || 'auto',
+        output_format: params.output_format || 'png'
+    };
+    const result = await submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 300);
+    const rawImages = result.images || result.output?.images || result.outputs || (result.url ? [result.url] : []);
+    const images = Array.isArray(rawImages) ? rawImages : [rawImages];
+    return { ...result, images };
+}
+
 export async function generateVideo(apiKey, params) {
     const modelInfo = getVideoModelById(params.model);
     const endpoint = modelInfo?.endpoint || params.model;
@@ -831,6 +845,24 @@ export async function getHistory(apiKey, { cursor, limit = 50 } = {}) {
     return await response.json();
 }
 
+// DELETE /api/v1/predictions/{requestId}/media — strips input/output media
+// URLs from the request (S3 objects removed) and clears them from the row;
+// used to back the "delete generated item" action against server-backed
+// (backfilled) history lists, since removing an item from local component
+// state alone doesn't touch the server record or its stored media.
+export async function deleteMedia(apiKey, requestId) {
+    const response = await fetch(`${BASE_URL}/api/v1/predictions/${requestId}/media`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey }
+    });
+    if (!response.ok) {
+        const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
+        throw new Error(`Failed to delete: ${response.status} - ${errText.slice(0, 100)}`);
+    }
+    return await response.json();
+}
+
 export async function runClipping(apiKey, params) {
     const payload = {
         video_url: params.video_url,
@@ -859,3 +891,30 @@ export async function runMotionGraphicsEdit(apiKey, params) {
     };
     return submitAndPoll("motion-graphics-edit", payload, apiKey, params.onRequestId, 900);
 }
+
+export async function upscaleImage(apiKey, { model, image_url, resolution, upscale_factor, onRequestId }) {
+    let endpoint = model;
+    let payload = { image_url };
+    if (model === "seedvr2-image-upscale") {
+        payload.resolution = resolution || "4k";
+    } else if (model === "topaz-image-upscale") {
+        payload.upscale_factor = Number(upscale_factor) || 2;
+    } else if (model === "ai-image-upscaler") {
+        endpoint = "ai-image-upscale";
+    }
+    return submitAndPoll(endpoint, payload, apiKey, onRequestId, 90);
+}
+
+export async function removeBackground(apiKey, { image_url, onRequestId }) {
+    const endpoint = "ai-background-remover";
+    const payload = { image_url };
+    return submitAndPoll(endpoint, payload, apiKey, onRequestId, 90);
+}
+
+export async function expandImage(apiKey, { image_url, onRequestId }) {
+    const endpoint = "ai-image-extension";
+    const payload = { image_url };
+    return submitAndPoll(endpoint, payload, apiKey, onRequestId, 90);
+}
+
+
