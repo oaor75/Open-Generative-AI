@@ -1,4 +1,12 @@
+import { getMediaCapability } from "./modelCapabilities.js";
+
 // Auto-generated from models_dump.json
+import {
+  getAspectRatioOptions,
+  I2I_DIMENSION_RATIOS,
+  T2I_DIMENSION_RATIOS,
+} from './imageSizing.js';
+
 export const t2iModels = [
   {
     "id": "nano-banana",
@@ -3338,15 +3346,17 @@ export const t2iModels = [
 
 export const getModelById = (id) => t2iModels.find(m => m.id === id);
 
+export const getSelectableAspectRatiosForModel = (modelId) => {
+  const model = getModelById(modelId);
+  return getAspectRatioOptions(model, T2I_DIMENSION_RATIOS);
+};
+
 export const getAspectRatiosForModel = (modelId) => {
   const model = getModelById(modelId);
   if (!model) return ['1:1'];
 
   const arInput = model.inputs?.aspect_ratio;
-  if (arInput && arInput.enum) {
-    return arInput.enum;
-  }
-
+  if (arInput && arInput.enum) return arInput.enum;
   return ['1:1', '16:9', '9:16', '4:3', '3:2', '21:9'];
 };
 
@@ -4542,14 +4552,15 @@ export const t2vModels = [
         "default": "16:9"
       },
       "duration": {
+        "enum": [
+          5,
+          8
+        ],
         "title": "Duration",
         "name": "duration",
         "type": "int",
         "description": "The duration of the generated video in seconds. 8s not supported for 1080p resolution.",
-        "default": 5,
-        "minValue": 5,
-        "maxValue": 8,
-        "step": 3
+        "default": 5
       },
       "resolution": {
         "enum": [
@@ -4558,6 +4569,15 @@ export const t2vModels = [
           "720p",
           "1080p"
         ],
+        "enum_dependencies": {
+          "duration": {
+            "8": [
+              "360p",
+              "540p",
+              "720p"
+            ]
+          }
+        },
         "title": "Resolution",
         "name": "resolution",
         "type": "string",
@@ -4662,6 +4682,15 @@ export const t2vModels = [
           "720p",
           "1080p"
         ],
+        "enum_dependencies": {
+          "duration": {
+            "10": [
+              "360p",
+              "540p",
+              "720p"
+            ]
+          }
+        },
         "title": "Resolution",
         "name": "resolution",
         "type": "string",
@@ -4851,14 +4880,17 @@ export const t2vModels = [
       },
       "duration": {
         "enum": [
-          10,
-          15
+          4,
+          8,
+          12,
+          16,
+          20
         ],
         "title": "Duration",
         "name": "duration",
         "type": "int",
         "description": "The duration of the generated video in seconds",
-        "default": 10
+        "default": 8
       }
     },
     "provider": "openai",
@@ -4887,15 +4919,17 @@ export const t2vModels = [
       },
       "duration": {
         "enum": [
-          10,
-          15,
-          25
+          4,
+          8,
+          12,
+          16,
+          20
         ],
         "title": "Duration",
         "name": "duration",
         "type": "int",
-        "description": "The duration of the generated video in seconds. Currently 25 seconds supports 720p only.",
-        "default": 10
+        "description": "The duration of the generated video in seconds.",
+        "default": 8
       },
       "resolution": {
         "enum": [
@@ -7342,6 +7376,7 @@ export const t2vModels = [
     "id": "seedance-2-mini-omni-reference",
     "name": "Seedance 2 Mini Omni Reference",
     "endpoint": "seedance-2-mini-omni-reference",
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -7807,6 +7842,20 @@ export const t2vModels = [
 
 export const getVideoModelById = (id) => t2vModels.find(m => m.id === id);
 
+const getDependentEnumValues = (input, selections = {}) => {
+  const values = input?.enum || [];
+  const dependencies = input?.enum_dependencies;
+  if (!dependencies) return values;
+
+  return Object.entries(dependencies).reduce((available, [field, rules]) => {
+    const selectedValue = selections[field];
+    const allowedValues = rules?.[String(selectedValue)];
+    if (!allowedValues) return available;
+    const allowed = new Set(allowedValues);
+    return available.filter(value => allowed.has(value));
+  }, values);
+};
+
 export const getAspectRatiosForVideoModel = (modelId) => {
   const model = getVideoModelById(modelId);
   if (!model) return ['16:9'];
@@ -7815,20 +7864,35 @@ export const getAspectRatiosForVideoModel = (modelId) => {
   return ['16:9', '9:16', '1:1'];
 };
 
+const getInputOptions = (input) => {
+  if (!input) return [];
+  if (input.enum) return input.enum;
+  if (input.minValue !== undefined && input.maxValue !== undefined) {
+    const step = input.step ?? 1;
+    const precision = Math.max(
+      String(input.minValue).split('.')[1]?.length || 0,
+      String(step).split('.')[1]?.length || 0,
+    );
+    const count = Math.floor((input.maxValue - input.minValue) / step + 1e-9);
+    return Array.from(
+      { length: count + 1 },
+      (_, index) => Number((input.minValue + index * step).toFixed(precision)),
+    );
+  }
+  return input.default !== undefined ? [input.default] : [];
+};
+
 export const getDurationsForModel = (modelId) => {
   const model = getVideoModelById(modelId);
   if (!model) return [5];
-  const durInput = model.inputs?.duration;
-  if (durInput && durInput.enum) return durInput.enum;
-  if (durInput) return [durInput.default || 5];
-  return [];
+  return getInputOptions(model.inputs?.duration);
 };
 
-export const getResolutionsForVideoModel = (modelId) => {
+export const getResolutionsForVideoModel = (modelId, selections = {}) => {
   const model = getVideoModelById(modelId);
   if (!model) return [];
   const resInput = model.inputs?.resolution;
-  if (resInput && resInput.enum) return resInput.enum;
+  if (resInput?.enum) return getDependentEnumValues(resInput, selections);
   return [];
 };
 // Auto-generated from schema_data.json — Image to Image models
@@ -8029,17 +8093,6 @@ export const i2iModels = [
     "provider_name": "Fal"
   },
   {
-    "id": "ai-image-extension",
-    "name": "AI Image Extension",
-    "endpoint": "ai-image-extension",
-    "family": "tools",
-    "imageField": "image_url",
-    "hasPrompt": false,
-    "inputs": {},
-    "provider": "muapi",
-    "provider_name": "Fal"
-  },
-  {
     "id": "ai-object-eraser",
     "name": "AI Object Eraser",
     "endpoint": "ai-object-eraser",
@@ -8174,7 +8227,7 @@ export const i2iModels = [
   },
   {
     "id": "gpt4o-edit",
-    "name": "GPT-4o Edit",
+    "name": "GPT-4o Mask Edit",
     "endpoint": "gpt4o-edit",
     "family": "gpt",
     "imageField": "image_url",
@@ -11603,6 +11656,7 @@ export const i2vModels = [
     "family": "wan2.1",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -11795,6 +11849,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -11839,6 +11894,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -11883,6 +11939,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -11927,6 +11984,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -12054,6 +12112,15 @@ export const i2vModels = [
           "720p",
           "1080p"
         ],
+        "enum_dependencies": {
+          "duration": {
+            "8": [
+              "360p",
+              "540p",
+              "720p"
+            ]
+          }
+        },
         "default": "720p"
       },
       "duration": {
@@ -12061,10 +12128,11 @@ export const i2vModels = [
         "title": "Duration",
         "name": "duration",
         "description": "The duration of the generated video in seconds. 8s not supported for 1080p resolution.",
-        "default": 5,
-        "minValue": 5,
-        "maxValue": 8,
-        "step": 3
+        "enum": [
+          5,
+          8
+        ],
+        "default": 5
       }
     },
     "provider": "pixverse",
@@ -12167,6 +12235,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "end_image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -12211,6 +12280,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "end_image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -12237,9 +12307,9 @@ export const i2vModels = [
         "name": "resolution",
         "description": "The resolution of the generated video.",
         "enum": [
-          "1080p"
+          "1080P"
         ],
-        "default": "1080p"
+        "default": "1080P"
       }
     },
     "provider": "minimax",
@@ -12315,6 +12385,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -12474,6 +12545,7 @@ export const i2vModels = [
     "family": "bytedance",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 4,
     "inputs": {
       "prompt": {
@@ -12517,6 +12589,7 @@ export const i2vModels = [
     "family": "wan2.1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 5,
     "inputs": {
       "prompt": {
@@ -12714,10 +12787,13 @@ export const i2vModels = [
         "name": "duration",
         "description": "The duration of the generated video in seconds",
         "enum": [
-          10,
-          15
+          4,
+          8,
+          12,
+          16,
+          20
         ],
-        "default": 10
+        "default": 8
       },
       "remove_watermark": {
         "type": "boolean",
@@ -12783,13 +12859,15 @@ export const i2vModels = [
         "type": "int",
         "title": "Duration",
         "name": "duration",
-        "description": "The duration of the generated video in seconds. Currently 25 seconds supports 720p only.",
+        "description": "The duration of the generated video in seconds.",
         "enum": [
-          10,
-          15,
-          25
+          4,
+          8,
+          12,
+          16,
+          20
         ],
-        "default": 10
+        "default": 8
       },
       "resolution": {
         "type": "string",
@@ -12853,6 +12931,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -12906,6 +12985,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -12959,6 +13039,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13008,6 +13089,7 @@ export const i2vModels = [
     "family": "veo3.1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 3,
     "inputs": {
       "prompt": {
@@ -13193,6 +13275,7 @@ export const i2vModels = [
     "family": "vidu-q2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 7,
     "inputs": {
       "prompt": {
@@ -13266,6 +13349,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13329,6 +13413,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13524,6 +13609,7 @@ export const i2vModels = [
     "family": "grok",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 7,
     "inputs": {
       "prompt": {
@@ -13571,6 +13657,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13614,7 +13701,9 @@ export const i2vModels = [
     "endpoint": "kling-o1-reference-to-video",
     "family": "kling-o1",
     "imageField": "images_list",
+    "videoField": "video_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 7,
     "inputs": {
       "prompt": {
@@ -13666,6 +13755,8 @@ export const i2vModels = [
     "family": "kling-v2.6",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "parameterNotice": "This integration supports 5 or 10 seconds.",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13768,6 +13859,15 @@ export const i2vModels = [
           "720p",
           "1080p"
         ],
+        "enum_dependencies": {
+          "duration": {
+            "10": [
+              "360p",
+              "540p",
+              "720p"
+            ]
+          }
+        },
         "default": "360p"
       },
       "duration": {
@@ -13807,6 +13907,7 @@ export const i2vModels = [
     "family": "wan2.2",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13906,6 +14007,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13938,6 +14040,7 @@ export const i2vModels = [
     "family": "kling-o1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 7,
     "inputs": {
       "prompt": {
@@ -13984,6 +14087,9 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
+    "parameterNotice": "Aspect ratio is inherited from the input image.",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14057,6 +14163,9 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
+    "parameterNotice": "Aspect ratio is inherited from the input image.",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14171,6 +14280,7 @@ export const i2vModels = [
     "family": "kling-v3.0-omni",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 4,
     "inputs": {
       "prompt": {
@@ -14234,6 +14344,7 @@ export const i2vModels = [
     "family": "kling-v3.0-omni",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 4,
     "inputs": {
       "prompt": {
@@ -14297,6 +14408,7 @@ export const i2vModels = [
     "family": "kling-v3.0-omni",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 4,
     "inputs": {
       "prompt": {
@@ -14354,6 +14466,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14393,6 +14506,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14487,6 +14601,7 @@ export const i2vModels = [
     "family": "sd-v2.0",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -14551,6 +14666,7 @@ export const i2vModels = [
     "family": "ltx2.3",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -14681,105 +14797,6 @@ export const i2vModels = [
     "provider_name": "OpenAI"
   },
   {
-    "id": "seedance-2-new-omni",
-    "name": "Seedance 2 New Omni",
-    "endpoint": "seedance-2.0-new-omni",
-    "family": "sd-v2.0",
-    "imageField": "images_list",
-    "hasPrompt": true,
-    "inputs": {
-      "prompt": {
-        "type": "string",
-        "title": "Prompt",
-        "name": "prompt",
-        "description": "Text prompt. Reference uploads via @image_file_1, @video_file_1, @audio_file_1, etc.",
-        "examples": [
-          "The character in @image_file_1 performs the moves from @video_file_1 with cinematic lighting."
-        ]
-      },
-      "images_list": {
-        "examples": [
-          "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/712345784292/4a8c5c70-abcc-4920-873e-b0e219986453.jpg"
-        ],
-        "description": "Up to 9 reference image URLs. Each Nth image corresponds to @image_file_N in the prompt.",
-        "field": "images_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "title": "Image URLs",
-        "name": "images_list",
-        "maxItems": 9
-      },
-      "video_files": {
-        "examples": [
-          "https://d3adwkbyhxyrtq.cloudfront.net/videos/186/314541316386/621c8607-a60f-4503-b1bf-a2c1cd90c84f.mp4"
-        ],
-        "description": "Up to 3 reference video clip URLs. Each Nth video corresponds to @video_file_N in the prompt.",
-        "field": "videos_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "title": "Video Reference URLs",
-        "name": "video_files",
-        "maxItems": 3
-      },
-      "audio_files": {
-        "examples": [
-          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/minimax-speech-2.6-turbo.mp3"
-        ],
-        "description": "Up to 3 reference audio clip URLs. Each Nth audio corresponds to @audio_file_N in the prompt.",
-        "field": "audios_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "title": "Audio Reference URLs",
-        "name": "audio_files",
-        "maxItems": 3
-      },
-      "aspect_ratio": {
-        "enum": [
-          "21:9",
-          "16:9",
-          "4:3",
-          "1:1",
-          "3:4",
-          "9:16"
-        ],
-        "type": "string",
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "description": "Output video aspect ratio.",
-        "default": "16:9"
-      },
-      "quality": {
-        "enum": [
-          "high",
-          "basic"
-        ],
-        "type": "string",
-        "title": "Quality",
-        "name": "quality",
-        "description": "high = standard model; basic = fast model.",
-        "default": "basic"
-      },
-      "duration": {
-        "type": "int",
-        "title": "Duration (seconds)",
-        "name": "duration",
-        "description": "Video duration in seconds (4–15).",
-        "default": 5,
-        "minValue": 4,
-        "maxValue": 15,
-        "step": 1
-      }
-    },
-    "provider": "bytedance",
-    "provider_name": "ByteDance"
-  },
-  {
     "id": "seedance-2-new-first-last",
     "name": "Seedance 2 New First Last",
     "endpoint": "seedance-2.0-new-first-last",
@@ -14857,6 +14874,7 @@ export const i2vModels = [
     "family": "sd-v2.0",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -14952,6 +14970,7 @@ export const i2vModels = [
     "family": "pixverse-v6",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15029,7 +15048,11 @@ export const i2vModels = [
     "family": "pixverse-v6",
     "imageField": "image_url",
     "lastImageField": "last_image",
+    "endImageRequired": true,
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
+    "parameterNotice": "Start and end frames are required. Aspect ratio is determined by the input frames.",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15054,7 +15077,7 @@ export const i2vModels = [
         "type": "string",
         "title": "Ending Image",
         "name": "last_image",
-        "description": "Upload ending image (optional).",
+        "description": "Upload ending image.",
         "field": "image",
         "examples": [
           "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/pixverse-v6-transition-1.jpg"
@@ -15145,6 +15168,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [],
@@ -15215,6 +15239,7 @@ export const i2vModels = [
     "family": "wan2.7",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15311,6 +15336,7 @@ export const i2vModels = [
     "family": "sd-v2.0",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -15379,6 +15405,7 @@ export const i2vModels = [
     "family": "sd-v2.0",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -15472,6 +15499,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15532,6 +15560,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15592,6 +15621,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15652,7 +15682,10 @@ export const i2vModels = [
     "endpoint": "seedance-2-first-last-frame-fast",
     "family": "sd-2",
     "imageField": "images_list",
+    "lastImageField": "images_list",
+    "endImageRequired": true,
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15714,6 +15747,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15785,6 +15819,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15856,6 +15891,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15923,6 +15959,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15989,7 +16026,10 @@ export const i2vModels = [
     "endpoint": "seedance-2-vip-first-last-frame",
     "family": "sd-2",
     "imageField": "images_list",
+    "lastImageField": "images_list",
+    "endImageRequired": true,
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16057,7 +16097,10 @@ export const i2vModels = [
     "endpoint": "seedance-2-vip-first-last-frame-fast",
     "family": "sd-2",
     "imageField": "images_list",
+    "lastImageField": "images_list",
+    "endImageRequired": true,
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16126,6 +16169,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16210,6 +16254,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16469,6 +16514,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "images_list": {
         "examples": [
@@ -16529,6 +16575,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "images_list": {
         "examples": [
@@ -16589,6 +16636,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16673,6 +16721,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16757,6 +16806,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16819,6 +16869,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -16877,6 +16928,7 @@ export const i2vModels = [
     "family": "vidu-q3-pro",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -16953,6 +17005,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -16985,7 +17038,6 @@ export const i2vModels = [
       },
       "resolution": {
         "enum": [
-          "360p",
           "540p",
           "720p",
           "1080p"
@@ -17038,6 +17090,7 @@ export const i2vModels = [
     "family": "vidu-q3-turbo",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -17114,6 +17167,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -17199,6 +17253,7 @@ export const i2vModels = [
     "family": "vidu-q2",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -17283,6 +17338,7 @@ export const i2vModels = [
     "family": "vidu-q2",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "examples": [
@@ -17367,6 +17423,7 @@ export const i2vModels = [
     "family": "happy-horse-1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -17437,6 +17494,7 @@ export const i2vModels = [
     "family": "happy-horse-1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -17507,6 +17565,7 @@ export const i2vModels = [
     "family": "gemini-omni",
     "imageField": "image_urls",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -17607,6 +17666,8 @@ export const i2vModels = [
     "family": "video-generation",
     "imageField": "images_list",
     "hasPrompt": true,
+    "aspectRatioMode": "inherited",
+    "parameterNotice": "Aspect ratio is inherited from the input image.",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -17680,6 +17741,7 @@ export const i2vModels = [
     "family": "kling-v3.0",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -17721,6 +17783,7 @@ export const i2vModels = [
     "family": "kling-v3.0",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -18152,6 +18215,7 @@ export const i2vModels = [
     "family": "happy-horse-1.1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -18222,6 +18286,7 @@ export const i2vModels = [
     "family": "happy-horse-1.1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -18292,6 +18357,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "images_list": {
         "examples": [
@@ -18352,6 +18418,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -18413,6 +18480,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -18983,6 +19051,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19050,6 +19119,7 @@ export const i2vModels = [
     "family": "sd-2",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19203,6 +19273,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19247,6 +19318,7 @@ export const i2vModels = [
     "family": "minimax-h3",
     "imageField": "reference_images",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19308,6 +19380,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19353,6 +19426,7 @@ export const i2vModels = [
     "imageField": "images_list",
     "maxImages": 9,
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19416,12 +19490,12 @@ export const getI2VModelById = (id) => i2vModels.find(m => m.id === id);
 
 export const getMaxImagesForI2VModel = (modelId) => {
     const model = getI2VModelById(modelId);
-    if (!model) return 1;
-    if (model.maxImages) return model.maxImages;
-    const imageInput = model.inputs?.[model.imageField];
-    if (imageInput?.type === 'array') return imageInput.maxItems || 1;
-    if (model.lastImageField) return 2;
-    return 1;
+    return model ? getMediaCapability(model, 'image').maxItems : 1;
+};
+
+export const getSelectableAspectRatiosForI2IModel = (modelId) => {
+    const model = getI2IModelById(modelId);
+    return getAspectRatioOptions(model, I2I_DIMENSION_RATIOS);
 };
 
 export const getAspectRatiosForI2IModel = (modelId) => {
@@ -19434,6 +19508,7 @@ export const getAspectRatiosForI2IModel = (modelId) => {
 export const getAspectRatiosForI2VModel = (modelId) => {
     const model = getI2VModelById(modelId);
     if (!model) return ['16:9'];
+    if (model.aspectRatioMode === 'inherited') return [];
     if (model.inputs && model.inputs.aspect_ratio && model.inputs.aspect_ratio.enum) return model.inputs.aspect_ratio.enum;
     return ['16:9', '9:16', '1:1'];
 };
@@ -19441,23 +19516,14 @@ export const getAspectRatiosForI2VModel = (modelId) => {
 export const getDurationsForI2VModel = (modelId) => {
     const model = getI2VModelById(modelId);
     if (!model) return [];
-    const dur = model.inputs && model.inputs.duration;
-    if (!dur) return [];
-    if (dur.enum) return dur.enum;
-    if (dur.minValue !== undefined && dur.maxValue !== undefined && dur.step) {
-        const vals = [];
-        for (let v = dur.minValue; v <= dur.maxValue; v += dur.step) vals.push(v);
-        return vals;
-    }
-    if (dur.default) return [dur.default];
-    return [];
+    return getInputOptions(model.inputs?.duration);
 };
 
-export const getResolutionsForI2VModel = (modelId) => {
+export const getResolutionsForI2VModel = (modelId, selections = {}) => {
     const model = getI2VModelById(modelId);
     if (!model) return [];
     const res = model.inputs && model.inputs.resolution;
-    if (res && res.enum) return res.enum;
+    if (res?.enum) return getDependentEnumValues(res, selections);
     return [];
 };
 
@@ -19470,14 +19536,6 @@ export const getEffectsForI2VModel = (modelId) => {
 export const getDefaultEffectForI2VModel = (modelId) => {
     const model = getI2VModelById(modelId);
     return model?.inputs?.name?.default || null;
-};
-
-export const getModesForModel = (modelId) => {
-    const model = [...t2vModels, ...i2vModels].find(m => m.id === modelId);
-    if (!model) return [];
-    const modeInput = model.inputs?.mode;
-    if (modeInput?.enum) return modeInput.enum;
-    return [];
 };
 
 export const getResolutionsForI2IModel = (modelId) => {
@@ -19528,7 +19586,7 @@ export const getQualityFieldForI2IModel = (modelId) => {
 // Returns the maximum number of images an i2i model accepts (defaults to 1)
 export const getMaxImagesForI2IModel = (modelId) => {
     const model = getI2IModelById(modelId);
-    return model?.maxImages || 1;
+    return model ? getMediaCapability(model, 'image').maxItems : 1;
 };
 
 // ─── Video-to-Video models ────────────────────────────────────────────────────
@@ -19657,6 +19715,7 @@ export const v2vModels = [
     "family": "wan2.2",
     "videoField": "video_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Easily modify existing videos using simple text commands.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -19711,7 +19770,25 @@ export const v2vModels = [
     "endpoint": "kling-o1-video-edit",
     "family": "kling-o1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 4,
     "hasPrompt": true,
+    "promptRequired": true,
+    "required": [
+      "prompt",
+      "images_list",
+      "video_url"
+    ],
+    "inputs": {
+      "images_list": {
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 4
+      }
+    },
     "description": "Kling O1 Video Edit lets you send an existing video clip plus an instruction/prompt to edit or transform the clip while preserving temporal coherence and subject identity.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -19722,7 +19799,25 @@ export const v2vModels = [
     "endpoint": "kling-o1-video-edit-fast",
     "family": "kling-o1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 4,
     "hasPrompt": true,
+    "promptRequired": true,
+    "required": [
+      "prompt",
+      "images_list",
+      "video_url"
+    ],
+    "inputs": {
+      "images_list": {
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 4
+      }
+    },
     "description": "Video Edit Fast is the lightweight, high-speed editing mode of Kling O1.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -19733,7 +19828,25 @@ export const v2vModels = [
     "endpoint": "kling-o1-standard-video-edit",
     "family": "kling-o1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 4,
     "hasPrompt": true,
+    "promptRequired": true,
+    "required": [
+      "prompt",
+      "images_list",
+      "video_url"
+    ],
+    "inputs": {
+      "images_list": {
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 4
+      }
+    },
     "description": "Kling O1 Standard Video-to-Video Edit modifies an existing video while preserving its original structure, motion, and realism.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -19745,6 +19858,7 @@ export const v2vModels = [
     "family": "wan2.2",
     "videoField": "video_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Wan-2.2-spicy Video Extend continues an existing video by generating new frames that match the original style but add stronger motion, bolder effects, and spicier dramatics.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -19756,6 +19870,7 @@ export const v2vModels = [
     "family": "seedance-v1.5-pro",
     "videoField": "video_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Seedance v1.5 Pro Video Extend continues an existing video by generating additional frames that match the original scene’s style, lighting, motion, and mood.",
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -19767,6 +19882,7 @@ export const v2vModels = [
     "family": "seedance-v1.5-pro",
     "videoField": "video_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Seedance v1.5 Pro Video Extend Fast quickly extends an existing video by generating a short continuation that matches the original style, motion, and lighting.",
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -19844,7 +19960,9 @@ export const v2vModels = [
     "endpoint": "wan2.7-video-extend",
     "family": "wan2.7",
     "videoField": "video_url",
+    "audioField": "audio_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Extend existing videos seamlessly with Wan 2.7.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -19855,7 +19973,11 @@ export const v2vModels = [
     "endpoint": "wan2.7-video-edit",
     "family": "wan2.7",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 3,
+    "imageOptional": true,
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Perform prompt-driven video editing with multi-image reference support.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -19866,7 +19988,10 @@ export const v2vModels = [
     "endpoint": "happy-horse-1-video-edit-1080p",
     "family": "happy-horse-1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 5,
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Happy Horse 1.0 Video Edit (1080p) - modify an input video at 1080p using a natural-language instruction with optional reference images.",
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -19877,7 +20002,10 @@ export const v2vModels = [
     "endpoint": "happy-horse-1-video-edit-720p",
     "family": "happy-horse-1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 5,
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Happy Horse 1.0 Video Edit (720p) - modify an input video at 720p using a natural-language instruction with optional reference images.",
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -19910,7 +20038,10 @@ export const v2vModels = [
     "endpoint": "gemini-omni-video-edit",
     "family": "gemini-omni",
     "videoField": "video_url",
+    "imageField": "image_urls",
+    "maxImages": 7,
     "hasPrompt": true,
+    "promptRequired": true,
     "description": "Gemini Omni Video Edit — natively multimodal video-to-video editing.",
     "provider": "google",
     "provider_name": "Google"
