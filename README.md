@@ -7,8 +7,8 @@
 
 **Community:** Join [Discord](https://discord.gg/tANKJkHck) for discussions and support
 
-<p align="center"><a href="https://youtu.be/SI1KJ2prGmc"><img src="https://i.ytimg.com/vi/SI1KJ2prGmc/maxresdefault.jpg" width="720"></a></p>
-<p align="center"><a href="https://youtu.be/SI1KJ2prGmc"><b>▶ Watch: Best AI Image Generator (API) in 2026 (Quality, Price, Uncensored, Editing) </b></a></p>
+<p align="center"><a href="https://youtu.be/u_fguVP6nSk"><img src="https://i.ytimg.com/vi/u_fguVP6nSk/maxresdefault.jpg" width="720"></a></p>
+<p align="center"><a href="https://youtu.be/u_fguVP6nSk"><b>▶ Watch: 📺 GPT-6 Astra Just Crossed a Line Even OpenAI Is Scared Of → </b></a></p>
 
 <p align="center">
   <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">
@@ -55,6 +55,7 @@ This is a curated set of high-value hubs, popular distribution tools, and model-
 - [AI-Youtube-Shorts-Generator](https://github.com/SamurAIGPT/AI-Youtube-Shorts-Generator) — Open-source Opus Clip alternative application.
 - [Open-AI-Design-Agent](https://github.com/Anil-matcha/Open-AI-Design-Agent) — Ppen-source autonomous AI design agent.
 - [Generative-Media-Skills](https://github.com/SamurAIGPT/Generative-Media-Skills) — Agent-ready skills for driving generative-media workflows.
+- [free-claude-ai-image-generator](https://github.com/Anil-matcha/free-claude-ai-image-generator) — give Claude itself image-generation via MuAPI's MCP server (Claude has no native image model).
 - [Seedance-2.5-API](https://github.com/SamurAIGPT/Seedance-2.5-API) — Python SDK for Seedance 2.5 video generation.
 - [Text-to-Speech-API](https://github.com/Anil-matcha/Text-to-Speech-API) — compare Muapi narration and multi-speaker speech endpoints with copy-paste examples.
 - [Speech-to-Text-API](https://github.com/Anil-matcha/Speech-to-Text-API) — compare Whisper transcription and Gemini audio analysis workflows.
