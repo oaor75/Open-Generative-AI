@@ -7,6 +7,226 @@ import {
   T2I_DIMENSION_RATIOS,
 } from './imageSizing.js';
 
+// Verified against https://api.muapi.ai/openapi.json on 2026-09-09.
+// Seedance 2.5 shares common inputs across its Standard, Intl and Spicy routes.
+// Spicy T2V/I2V routes additionally support native resolution and audio
+// generation controls.
+const SEEDANCE_25_ASPECT_RATIO_INPUT = Object.freeze({
+  enum: Object.freeze(["adaptive", "16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21"]),
+  type: "string",
+  title: "Aspect Ratio",
+  name: "aspect_ratio",
+  description: "Aspect ratio of the output video.",
+  default: "16:9",
+});
+const SEEDANCE_25_RESOLUTION_INPUT = Object.freeze({
+  enum: Object.freeze(["480p", "720p", "1080p", "4K"]),
+  type: "string",
+  title: "Resolution",
+  name: "resolution",
+  description: "Output video resolution.",
+  default: "1080p",
+});
+const SEEDANCE_HIGH_BITRATE_INPUT = Object.freeze({
+  type: "boolean",
+  title: "High Bitrate",
+  name: "high_bitrate",
+  description: "Enable high bitrate mode for better visual fidelity. Produces larger files.",
+  default: false,
+});
+const SEEDANCE_GENERATE_AUDIO_INPUT = Object.freeze({
+  type: "boolean",
+  title: "Generate Audio",
+  name: "generate_audio",
+  description: "Whether to generate audio for the video.",
+  default: true,
+});
+const SEEDANCE_15_EXTEND_INPUTS = Object.freeze({
+  resolution: {
+    type: "string", title: "Resolution", name: "resolution",
+    enum: ["480p", "720p"], default: "720p",
+  },
+  duration: {
+    type: "int", title: "Duration", name: "duration",
+    default: 5, minValue: 4, maxValue: 12, step: 1,
+  },
+  generate_audio: SEEDANCE_GENERATE_AUDIO_INPUT,
+  camera_fixed: {
+    type: "boolean", title: "Camera Fixed", name: "camera_fixed",
+    description: "Keep the camera still.", default: false,
+  },
+});
+const SEEDANCE_25_SEED_INPUT = Object.freeze({
+  type: "int",
+  title: "Seed",
+  name: "seed",
+  description: "Random seed for reproducible generation. Use -1 for random.",
+  minValue: -1,
+  maxValue: 4294967295,
+});
+const GROK_ASPECT_RATIO_INPUT = Object.freeze({
+  type: "string", title: "Aspect Ratio", name: "aspect_ratio",
+  enum: Object.freeze(["9:16", "16:9", "2:3", "3:2", "1:1"]),
+  default: "2:3",
+});
+const GROK_RESOLUTION_INPUT = Object.freeze({
+  type: "string", title: "Resolution", name: "resolution",
+  enum: Object.freeze(["480p", "720p"]), default: "480p",
+});
+const GROK_DURATION_INPUT = Object.freeze({
+  type: "int", title: "Duration", name: "duration",
+  default: 6, minValue: 6, maxValue: 30, step: 1,
+});
+const GROK_IMAGE_INPUT = Object.freeze({
+  type: "array", title: "Image URLs", name: "images_list",
+  items: Object.freeze({ type: "string" }), minItems: 1, maxItems: 7,
+});
+const GROK_STYLE_INPUT = Object.freeze({
+  type: "string", title: "Style", name: "mode", configurable: true,
+  enum: Object.freeze(["normal", "fun", "spicy"]), default: "normal",
+});
+const MINIMAX_H3_OPEN_SEED_INPUT = Object.freeze({
+  type: "integer",
+  title: "Seed",
+  name: "seed",
+  description: "Random seed. Use -1 for random.",
+  default: -1,
+});
+
+// Wan inputs verified against https://api.muapi.ai/openapi.json on 2026-09-09.
+const WAN_AUDIO_INPUT = Object.freeze({
+  type: "string", field: "audio", title: "Guiding audio", name: "audio_url",
+  description: "Audio to guide the video.",
+});
+const WAN_NEGATIVE_PROMPT_INPUT = Object.freeze({
+  type: "string", title: "Negative prompt", name: "negative_prompt",
+  description: "What to leave out of the video.",
+});
+const WAN_22_RESOLUTION_INPUT = Object.freeze({
+  type: "string", title: "Resolution", name: "resolution",
+  enum: Object.freeze(["480p", "720p"]), default: "480p",
+});
+const WAN_27_RESOLUTION_INPUT = Object.freeze({
+  type: "string", title: "Resolution", name: "resolution",
+  enum: Object.freeze(["720p", "1080p"]), default: "720p",
+});
+
+// Happy Horse inputs verified against https://api.muapi.ai/openapi.json on 2026-09-09.
+const HAPPY_HORSE_SEED_INPUT = Object.freeze({
+  type: "int", title: "Seed", name: "seed",
+  description: "Optional seed for repeatable results.",
+  minValue: 0, maxValue: 2147483647, step: 1,
+});
+const HAPPY_HORSE_EDIT_INPUTS = Object.freeze({
+  prompt: { type: "string", title: "Prompt", name: "prompt" },
+  video_url: { type: "string", title: "Source video", name: "video_url" },
+  images_list: {
+    type: "array", items: { type: "string" }, title: "Reference images",
+    name: "images_list", maxItems: 5,
+  },
+  audio_setting: {
+    type: "string", title: "Audio", name: "audio_setting",
+    enum: ["auto", "origin"], default: "auto",
+  },
+  seed: HAPPY_HORSE_SEED_INPUT,
+});
+
+// Kling inputs verified against https://api.muapi.ai/openapi.json on 2026-09-09.
+// Output sizes are recorded only for documented routes;
+// resolution selects an endpoint and is not a native request parameter.
+const KLING_ASPECT_RATIO_INPUT = Object.freeze({
+  type: "string", title: "Aspect Ratio", name: "aspect_ratio",
+  enum: Object.freeze(["16:9", "9:16", "1:1"]), default: "16:9",
+});
+const KLING_AUDIO_INPUT = Object.freeze({
+  type: "boolean", title: "Generate audio", name: "generate_audio", default: true,
+});
+const KLING_SOUND_INPUT = Object.freeze({
+  type: "boolean", title: "Generate audio", name: "sound", default: true,
+});
+const KLING_KEEP_SOUND_INPUT = Object.freeze({
+  type: "boolean", title: "Keep original sound", name: "keep_original_sound",
+  default: true,
+});
+const KLING_MOTION_INPUTS = Object.freeze({
+  prompt: { type: "string", title: "Prompt", name: "prompt" },
+  image_url: { type: "string", field: "image", title: "Character image", name: "image_url" },
+  video_url: { type: "string", field: "video", title: "Motion video", name: "video_url" },
+  character_orientation: {
+    type: "string", title: "Character orientation", name: "character_orientation",
+    enum: ["image", "video"], default: "image",
+  },
+});
+const KLING_3_MOTION_INPUTS = Object.freeze({
+  ...KLING_MOTION_INPUTS,
+  keep_original_sound: KLING_KEEP_SOUND_INPUT,
+});
+const KLING_O1_EDIT_INPUTS = Object.freeze({
+  prompt: { type: "string", title: "Prompt", name: "prompt" },
+  video_url: { type: "string", field: "video", title: "Source video", name: "video_url" },
+  images_list: {
+    type: "array", items: { type: "string" }, title: "Reference images",
+    name: "images_list", maxItems: 4,
+  },
+  keep_original_sound: KLING_KEEP_SOUND_INPUT,
+});
+const KLING_O1_PRO_EDIT_INPUTS = Object.freeze({
+  ...KLING_O1_EDIT_INPUTS,
+  aspect_ratio: KLING_ASPECT_RATIO_INPUT,
+});
+const KLING_OMNI_REFERENCE_INPUT = Object.freeze({
+  type: "array", items: { type: "string" }, title: "Reference images",
+  name: "images_list", minItems: 1, maxItems: 4,
+});
+
+const VIDU_REFERENCE_INPUT = Object.freeze({
+  type: "array", items: { type: "string" }, title: "Reference images",
+  name: "images_list", minItems: 1,
+});
+const VIDU_Q2_MUSIC_INPUT = Object.freeze({
+  type: "boolean", title: "Background music", name: "bgm", default: false,
+  description: "Sets duration to 4 seconds.", descriptionKey: "musicDuration",
+});
+// Q2 music requires four seconds only on the regular text/image routes.
+const VIDU_Q2_MUSIC_RULES = Object.freeze([
+  { when: { bgm: [true] }, options: { durations: [4] } },
+]);
+const VIDU_2_FORMAT_RULES = Object.freeze([
+  { when: { resolution: ["360p", "720p"] }, options: { aspectRatios: ["16:9"] } },
+  { when: { resolution: ["1080p"] }, options: { aspectRatios: ["1:1"] } },
+]);
+
+// PixVerse 4.5 supports five seconds at 1080p; 5.5 also supports eight.
+const PIXVERSE_45_DURATION_RULES = Object.freeze([
+  { when: { resolution: ["1080p"] }, options: { durations: [5] } },
+]);
+const PIXVERSE_55_DURATION_RULES = Object.freeze([
+  { when: { resolution: ["1080p"] }, options: { durations: [5, 8] } },
+]);
+const PIXVERSE_55_SETTINGS = Object.freeze({
+  style: {
+    type: "string", title: "Style", name: "style",
+    enum: ["none", "anime", "3d_animation", "clay", "comic", "cyberpunk"], default: "none",
+  },
+  thinking: {
+    type: "string", title: "Prompt enhancement", name: "thinking",
+    enum: ["auto", "enabled", "disabled"], default: "auto",
+    description: "Let the model refine your description.",
+  },
+  audio: {
+    type: "boolean", title: "Generate audio", name: "audio", default: false,
+  },
+  multi_clip: {
+    type: "boolean", title: "Multiple shots", name: "multi_clip", default: false,
+    description: "Use several shots with camera changes.",
+  },
+});
+
+const LTX_GENERATE_AUDIO_INPUT = Object.freeze({
+  type: "boolean", title: "Generate Audio", name: "generate_audio",
+  description: "Whether to generate audio.", default: true,
+});
+
 export const t2iModels = [
   {
     "id": "nano-banana",
@@ -3846,7 +4066,6 @@ export const t2vModels = [
           "1:1",
           "4:3",
           "3:4",
-          "21:9",
           "9:21"
         ],
         "title": "Aspect Ratio",
@@ -3898,8 +4117,7 @@ export const t2vModels = [
           "1:1",
           "4:3",
           "3:4",
-          "21:9",
-          "9:21"
+          "21:9"
         ],
         "title": "Aspect Ratio",
         "name": "aspect_ratio",
@@ -4196,6 +4414,7 @@ export const t2vModels = [
   },
   {
     "id": "kling-v2.1-master-t2v",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling 2.1 Master",
     "inputs": {
       "prompt": {
@@ -4270,6 +4489,7 @@ export const t2vModels = [
     "id": "kling-v2.6-pro-t2v",
     "name": "Kling 2.6 Pro",
     "inputs": {
+      "sound": KLING_SOUND_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -4342,8 +4562,10 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3.0-pro-text-to-video",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling 3.0 Pro",
     "inputs": {
+      "generate_audio": KLING_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -4378,8 +4600,10 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3.0-standard-text-to-video",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling 3.0 Standard",
     "inputs": {
+      "generate_audio": KLING_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -4495,7 +4719,9 @@ export const t2vModels = [
       },
       "resolution": {
         "enum": [
-          "1080p"
+          "720p",
+          "1080p",
+          "4k"
         ],
         "title": "Resolution",
         "name": "resolution",
@@ -4540,7 +4766,9 @@ export const t2vModels = [
       },
       "resolution": {
         "enum": [
-          "1080p"
+          "720p",
+          "1080p",
+          "4k"
         ],
         "title": "Resolution",
         "name": "resolution",
@@ -4585,7 +4813,9 @@ export const t2vModels = [
       },
       "resolution": {
         "enum": [
-          "1080p"
+          "720p",
+          "1080p",
+          "4k"
         ],
         "title": "Resolution",
         "name": "resolution",
@@ -4803,6 +5033,7 @@ export const t2vModels = [
     "id": "wan2.5-text-to-video",
     "name": "Wan 2.5",
     "inputs": {
+      "audio_url": WAN_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -4850,6 +5081,7 @@ export const t2vModels = [
     "id": "wan2.5-text-to-video-fast",
     "name": "Wan 2.5 Fast",
     "inputs": {
+      "audio_url": WAN_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -4896,6 +5128,11 @@ export const t2vModels = [
     "id": "wan2.6-text-to-video",
     "name": "Wan 2.6",
     "inputs": {
+      "shot_type": {
+        "type": "string", "title": "Shots", "name": "shot_type",
+        "enum": ["single", "multi"], "default": "single"
+      },
+      "audio_url": WAN_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -4995,6 +5232,7 @@ export const t2vModels = [
   {
     "id": "pixverse-v4.5-t2v",
     "name": "PixVerse V4.5",
+    "commonParameterRules": PIXVERSE_45_DURATION_RULES,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -5107,7 +5345,9 @@ export const t2vModels = [
   {
     "id": "pixverse-v5.5-t2v",
     "name": "PixVerse V5.5",
+    "commonParameterRules": PIXVERSE_55_DURATION_RULES,
     "inputs": {
+      ...PIXVERSE_55_SETTINGS,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -5238,6 +5478,9 @@ export const t2vModels = [
   {
     "id": "minimax-hailuo-2.3-pro-t2v",
     "name": "MiniMax Hailuo 2.3 Pro",
+    // Hailuo 2.3 supports 1080p only at 6s; MuAPI fixes the duration on this route.
+    // https://platform.minimax.io/docs/api-reference/video-generation-t2v
+    "fixedParameters": { "duration": 6 },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -5262,6 +5505,8 @@ export const t2vModels = [
   {
     "id": "minimax-hailuo-2.3-standard-t2v",
     "name": "MiniMax Hailuo 2.3 Standard",
+    // https://muapi.ai/zh/playground/minimax-hailuo-2.3-standard-t2v
+    "fixedParameters": { "resolution": "768p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -5490,44 +5735,10 @@ export const t2vModels = [
         "name": "prompt",
         "description": "Text prompt describing the video."
       },
-      "aspect_ratio": {
-        "enum": [
-          "9:16",
-          "16:9",
-          "2:3",
-          "3:2",
-          "1:1"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "1:1"
-      },
-      "mode": {
-        "enum": [
-          "fun",
-          "normal",
-          "spicy"
-        ],
-        "title": "Mode",
-        "name": "mode",
-        "type": "string",
-        "description": "Generation style: normal = standard output; fun = more creative/expressive; spicy = edgier content (text-to-video only).",
-        "default": "normal"
-      },
-      "duration": {
-        "enum": [
-          6,
-          10,
-          15
-        ],
-        "title": "Duration",
-        "name": "duration",
-        "type": "int",
-        "description": "The duration of the generated video in seconds.",
-        "default": 6
-      }
+      "aspect_ratio": { ...GROK_ASPECT_RATIO_INPUT, default: "1:1" },
+      "mode": GROK_STYLE_INPUT,
+      "resolution": GROK_RESOLUTION_INPUT,
+      "duration": GROK_DURATION_INPUT
     },
     "provider": "grok",
     "provider_name": "xAI"
@@ -5536,6 +5747,7 @@ export const t2vModels = [
     "id": "ltx-2-pro-text-to-video",
     "name": "LTX 2 Pro",
     "inputs": {
+      "generate_audio": LTX_GENERATE_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -5562,6 +5774,7 @@ export const t2vModels = [
     "id": "ltx-2-fast-text-to-video",
     "name": "LTX 2 Fast",
     "inputs": {
+      "generate_audio": LTX_GENERATE_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -5953,6 +6166,7 @@ export const t2vModels = [
     "id": "grok-imagine-extend",
     "name": "Grok Imagine Extend",
     "requiresRequestId": true,
+    "promptRequired": true,
     "endpoint": "grok-imagine-extend",
     "inputs": {
       "request_id": {
@@ -5986,17 +6200,7 @@ export const t2vModels = [
         "description": "Duration in seconds to extend the video.",
         "default": 6
       },
-      "resolution": {
-        "enum": [
-          "480p",
-          "720p"
-        ],
-        "title": "Resolution",
-        "name": "resolution",
-        "type": "string",
-        "description": "Output video resolution.",
-        "default": "480p"
-      }
+      "resolution": GROK_RESOLUTION_INPUT
     },
     "provider": "grok",
     "provider_name": "xAI"
@@ -6224,7 +6428,8 @@ export const t2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -6267,7 +6472,8 @@ export const t2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -6376,6 +6582,7 @@ export const t2vModels = [
     "id": "happy-horse-1-text-to-video-1080p",
     "name": "HappyHorse 1.0 1080P",
     "endpoint": "happy-horse-1-text-to-video-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -6418,6 +6625,7 @@ export const t2vModels = [
     "id": "happy-horse-1-text-to-video-720p",
     "name": "HappyHorse 1.0 720P",
     "endpoint": "happy-horse-1-text-to-video-720p",
+    "fixedParameters": { "resolution": "720p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -6534,7 +6742,8 @@ export const t2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -6577,13 +6786,15 @@ export const t2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
   },
   {
     "id": "kling-v3.0-4k-text-to-video",
+    "fixedParameters": { resolution: "4K" },
     "name": "Kling 3.0 4K",
     "endpoint": "kling-v3.0-4k-text-to-video",
     "inputs": {
@@ -6618,13 +6829,7 @@ export const t2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "generate_audio": {
-        "type": "boolean",
-        "default": true,
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio for the video"
-      }
+      "generate_audio": KLING_AUDIO_INPUT
     },
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -6757,6 +6962,7 @@ export const t2vModels = [
     "id": "vidu-q2-pro-text-to-video",
     "name": "Vidu Q2 Pro",
     "endpoint": "vidu-q2-pro-text-to-video",
+    "commonParameterRules": VIDU_Q2_MUSIC_RULES,
     "inputs": {
       "prompt": {
         "examples": [
@@ -6800,13 +7006,7 @@ export const t2vModels = [
         "maxValue": 8,
         "step": 1
       },
-      "bgm": {
-        "type": "boolean",
-        "title": "Bgm",
-        "name": "bgm",
-        "description": "Add background music to the output. When enabled, duration must be exactly 4 seconds.",
-        "default": false
-      },
+      "bgm": VIDU_Q2_MUSIC_INPUT,
       "movement_amplitude": {
         "enum": [
           "auto",
@@ -6828,6 +7028,7 @@ export const t2vModels = [
     "id": "vidu-q2-turbo-text-to-video",
     "name": "Vidu Q2 Turbo",
     "endpoint": "vidu-q2-turbo-text-to-video",
+    "commonParameterRules": VIDU_Q2_MUSIC_RULES,
     "inputs": {
       "prompt": {
         "examples": [
@@ -6871,13 +7072,7 @@ export const t2vModels = [
         "maxValue": 8,
         "step": 1
       },
-      "bgm": {
-        "type": "boolean",
-        "title": "Bgm",
-        "name": "bgm",
-        "description": "Add background music to the output. When enabled, duration must be exactly 4 seconds.",
-        "default": false
-      },
+      "bgm": VIDU_Q2_MUSIC_INPUT,
       "movement_amplitude": {
         "enum": [
           "auto",
@@ -7099,6 +7294,7 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3.0-omni-standard-text-to-video",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling 3.0 Omni Standard",
     "endpoint": "kling-v3.0-omni-standard-text-to-video",
     "inputs": {
@@ -7158,6 +7354,7 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3.0-omni-pro-text-to-video",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling 3.0 Omni Pro",
     "endpoint": "kling-v3.0-omni-pro-text-to-video",
     "inputs": {
@@ -7217,6 +7414,7 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3.0-omni-4k-text-to-video",
+    "fixedParameters": { resolution: "4K" },
     "name": "Kling 3.0 Omni 4K",
     "endpoint": "kling-v3.0-omni-4k-text-to-video",
     "inputs": {
@@ -7352,6 +7550,7 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3-turbo-standard-text-to-video",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling 3.0 Turbo Standard",
     "endpoint": "kling-v3-turbo-standard-text-to-video",
     "inputs": {
@@ -7392,6 +7591,7 @@ export const t2vModels = [
   },
   {
     "id": "kling-v3-turbo-pro-text-to-video",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling 3.0 Turbo Pro",
     "endpoint": "kling-v3-turbo-pro-text-to-video",
     "inputs": {
@@ -7455,23 +7655,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -7518,23 +7702,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -7629,6 +7797,7 @@ export const t2vModels = [
     "id": "happy-horse-1.1-text-to-video-1080p",
     "name": "HappyHorse 1.1 1080P",
     "endpoint": "happy-horse-1.1-text-to-video-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -7671,6 +7840,7 @@ export const t2vModels = [
     "id": "happy-horse-1.1-text-to-video-720p",
     "name": "HappyHorse 1.1 720P",
     "endpoint": "happy-horse-1.1-text-to-video-720p",
+    "fixedParameters": { "resolution": "720p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -7858,7 +8028,8 @@ export const t2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -7868,6 +8039,8 @@ export const t2vModels = [
     "name": "Seedance 2.5 Spicy",
     "endpoint": "seedance-2.5-spicy-text-to-video",
     "inputs": {
+      "resolution": SEEDANCE_25_RESOLUTION_INPUT,
+      "generate_audio": SEEDANCE_GENERATE_AUDIO_INPUT,
       "prompt": {
         "examples": [
           "A high-contrast, adrenaline-fueled chase through a rain-soaked neon megacity at night, sparks and shattering glass in slow motion, aggressive handheld camera energy, exaggerated color grading, 4K cinematic quality."
@@ -7877,35 +8050,7 @@ export const t2vModels = [
         "title": "Prompt",
         "name": "prompt"
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "3:4",
-          "4:3",
-          "21:9"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
-      "resolution": {
-        "enum": [
-          "480p",
-          "720p",
-          "1080p",
-          "4K"
-        ],
-        "title": "Resolution",
-        "name": "resolution",
-        "type": "string",
-        "description": "Output video resolution.",
-        "default": "1080p"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "duration": {
         "title": "Duration",
         "name": "duration",
@@ -7913,22 +8058,8 @@ export const t2vModels = [
         "description": "The duration of the generated video in seconds.",
         "default": 5,
         "minValue": 4,
-        "maxValue": 16,
+        "maxValue": 30,
         "step": 1
-      },
-      "generate_audio": {
-        "type": "boolean",
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio for the video.",
-        "default": true
-      },
-      "camera_fixed": {
-        "type": "boolean",
-        "title": "Camera Fixed",
-        "name": "camera_fixed",
-        "description": "Whether to fix the camera position.",
-        "default": false
       },
       "high_bitrate": {
         "type": "boolean",
@@ -7936,7 +8067,8 @@ export const t2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "seed": SEEDANCE_25_SEED_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -8178,7 +8310,8 @@ export const t2vModels = [
         "title": "Duration",
         "name": "duration",
         "default": 5
-      }
+      },
+      "seed": MINIMAX_H3_OPEN_SEED_INPUT
     },
     "provider": "minimax",
     "provider_name": "Minimax"
@@ -8418,23 +8551,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8481,23 +8598,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8544,23 +8645,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8607,23 +8692,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8670,23 +8739,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8733,23 +8786,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8796,23 +8833,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8859,23 +8880,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -8922,23 +8927,7 @@ export const t2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -13251,6 +13240,7 @@ export const i2vModels = [
     "family": "veo",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13283,6 +13273,7 @@ export const i2vModels = [
     "family": "veo",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13466,11 +13457,11 @@ export const i2vModels = [
   },
   {
     "id": "kling-v2.1-master-i2v",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling v2.1 Master I2V",
     "endpoint": "kling-v2.1-master-i2v",
     "family": "kling-v2.1",
     "imageField": "image_url",
-    "lastImageField": "last_image",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -13511,11 +13502,11 @@ export const i2vModels = [
   },
   {
     "id": "kling-v2.1-standard-i2v",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling 2.1 Standard",
     "endpoint": "kling-v2.1-standard-i2v",
     "family": "kling-v2.1",
     "imageField": "image_url",
-    "lastImageField": "last_image",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -13556,6 +13547,7 @@ export const i2vModels = [
   },
   {
     "id": "kling-v2.1-pro-i2v",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling 2.1 Pro",
     "endpoint": "kling-v2.1-pro-i2v",
     "family": "kling-v2.1",
@@ -13700,6 +13692,8 @@ export const i2vModels = [
     "imageField": "images_list",
     "lastImageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
+    "commonParameterRules": PIXVERSE_45_DURATION_RULES,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13765,10 +13759,12 @@ export const i2vModels = [
     "id": "vidu-v2.0-i2v",
     "name": "Vidu v2.0 I2V",
     "endpoint": "vidu-v2.0-i2v",
+    "commonParameterRules": VIDU_2_FORMAT_RULES,
     "family": "vidu-v2",
     "imageField": "images_list",
     "lastImageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -13823,8 +13819,10 @@ export const i2vModels = [
     "family": "vidu-q1",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 7,
     "inputs": {
+      "images_list": VIDU_REFERENCE_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -14059,6 +14057,7 @@ export const i2vModels = [
     "family": "bytedance",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14110,6 +14109,7 @@ export const i2vModels = [
     "imageField": "images_list",
     "lastImageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14267,6 +14267,8 @@ export const i2vModels = [
     "family": "kling-v2.5",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14298,7 +14300,10 @@ export const i2vModels = [
     "family": "wan2.5",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
+      "audio_url": WAN_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -14341,7 +14346,10 @@ export const i2vModels = [
     "family": "wan2.5",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
+      "audio_url": WAN_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -14382,7 +14390,9 @@ export const i2vModels = [
     "endpoint": "openai-sora-2-image-to-video",
     "family": "sora",
     "imageField": "images_list",
+    "maxImages": 1,
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14417,13 +14427,6 @@ export const i2vModels = [
           20
         ],
         "default": 8
-      },
-      "remove_watermark": {
-        "type": "boolean",
-        "title": "Remove Watermark",
-        "name": "remove_watermark",
-        "description": "When enabled, removes watermarks from the generated video.",
-        "default": true
       }
     },
     "provider": "openai",
@@ -14456,7 +14459,9 @@ export const i2vModels = [
     "endpoint": "openai-sora-2-pro-image-to-video",
     "family": "sora",
     "imageField": "images_list",
+    "maxImages": 1,
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14502,13 +14507,6 @@ export const i2vModels = [
           "1080p"
         ],
         "default": "720p"
-      },
-      "remove_watermark": {
-        "type": "boolean",
-        "title": "Remove Watermark",
-        "name": "remove_watermark",
-        "description": "When enabled, removes watermarks from the generated video.",
-        "default": true
       }
     },
     "provider": "openai",
@@ -14592,7 +14590,9 @@ export const i2vModels = [
         "name": "resolution",
         "description": "The resolution of the generated video.",
         "enum": [
-          "1080p"
+          "720p",
+          "1080p",
+          "4k"
         ],
         "default": "1080p"
       }
@@ -14646,7 +14646,9 @@ export const i2vModels = [
         "name": "resolution",
         "description": "The resolution of the generated video.",
         "enum": [
-          "1080p"
+          "720p",
+          "1080p",
+          "4k"
         ],
         "default": "1080p"
       }
@@ -14697,7 +14699,9 @@ export const i2vModels = [
         "name": "resolution",
         "description": "The resolution of the generated video.",
         "enum": [
-          "1080p"
+          "720p",
+          "1080p",
+          "4k"
         ],
         "default": "1080p"
       }
@@ -14731,7 +14735,8 @@ export const i2vModels = [
         "description": "The resolution of the generated video.",
         "enum": [
           "720p",
-          "1080p"
+          "1080p",
+          "4k"
         ],
         "default": "720p"
       },
@@ -14763,6 +14768,7 @@ export const i2vModels = [
     "family": "bytedance",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14813,6 +14819,7 @@ export const i2vModels = [
     "family": "ltx",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14835,13 +14842,7 @@ export const i2vModels = [
         ],
         "default": 6
       },
-      "generate_audio": {
-        "type": "boolean",
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio.",
-        "default": true
-      }
+      "generate_audio": LTX_GENERATE_AUDIO_INPUT
     },
     "provider": "lightricks",
     "provider_name": "Lightricks"
@@ -14853,6 +14854,7 @@ export const i2vModels = [
     "family": "ltx",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -14880,13 +14882,7 @@ export const i2vModels = [
         ],
         "default": 6
       },
-      "generate_audio": {
-        "type": "boolean",
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio.",
-        "default": true
-      }
+      "generate_audio": LTX_GENERATE_AUDIO_INPUT
     },
     "provider": "lightricks",
     "provider_name": "Lightricks"
@@ -14901,6 +14897,7 @@ export const i2vModels = [
     "promptRequired": true,
     "maxImages": 7,
     "inputs": {
+      "images_list": VIDU_REFERENCE_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15053,6 +15050,7 @@ export const i2vModels = [
         "name": "resolution",
         "description": "The resolution of the generated video.",
         "enum": [
+          "540p",
           "720p",
           "1080p"
         ],
@@ -15064,7 +15062,7 @@ export const i2vModels = [
         "name": "duration",
         "description": "The duration of the generated video in seconds",
         "default": 5,
-        "minValue": 2,
+        "minValue": 1,
         "maxValue": 8,
         "step": 1
       },
@@ -15099,6 +15097,8 @@ export const i2vModels = [
     "family": "minimax-2.3",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "fixedParameters": { "duration": 6 },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15130,6 +15130,8 @@ export const i2vModels = [
     "family": "minimax-2.3",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "fixedParameters": { "resolution": "768p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15162,6 +15164,8 @@ export const i2vModels = [
     "family": "minimax-2.3",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "fixedParameters": { "resolution": "768p" },
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15201,6 +15205,8 @@ export const i2vModels = [
     "family": "kling-v2.5",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15233,8 +15239,8 @@ export const i2vModels = [
     "imageField": "images_list",
     "hasPrompt": true,
     "promptRequired": true,
-    "maxImages": 7,
     "inputs": {
+      "images_list": GROK_IMAGE_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15244,30 +15250,10 @@ export const i2vModels = [
           "Camera glides through vines toward temple entrance, mist disperses as sunlight pierces canopy, birds fly off, subtle dust motes in the air, adventure-style cinematic score."
         ]
       },
-      "mode": {
-        "type": "string",
-        "title": "Mode",
-        "name": "mode",
-        "description": "Note: When generating videos using external image inputs, Spicy mode is not supported and will automatically switch to Normal.",
-        "enum": [
-          "fun",
-          "normal",
-          "spicy"
-        ],
-        "default": "normal"
-      },
-      "duration": {
-        "type": "int",
-        "title": "Duration",
-        "name": "duration",
-        "description": "The duration of the generated video in seconds.",
-        "enum": [
-          6,
-          10,
-          15
-        ],
-        "default": 6
-      }
+      "aspect_ratio": { ...GROK_ASPECT_RATIO_INPUT, descriptionKey: "singleImageFormat" },
+      "mode": { ...GROK_STYLE_INPUT, enum: ["normal", "fun"] },
+      "resolution": GROK_RESOLUTION_INPUT,
+      "duration": GROK_DURATION_INPUT
     },
     "provider": "grok",
     "provider_name": "xAI"
@@ -15328,7 +15314,12 @@ export const i2vModels = [
     "hasPrompt": true,
     "promptRequired": true,
     "maxImages": 7,
+    "required": ["prompt", "images_list"],
     "inputs": {
+      "images_list": {
+        type: "array", items: { type: "string" }, title: "Reference images",
+        name: "images_list", maxItems: 7,
+      },
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15360,13 +15351,7 @@ export const i2vModels = [
         "maxValue": 10,
         "step": 1
       },
-      "keep_original_sound": {
-        "type": "boolean",
-        "title": "Keep Original Sound",
-        "name": "keep_original_sound",
-        "description": "Select whether to keep the video original sound through the parameter.",
-        "default": true
-      }
+      "keep_original_sound": KLING_KEEP_SOUND_INPUT
     },
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -15379,7 +15364,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "hasPrompt": true,
     "promptRequired": true,
-    "parameterNotice": "This integration supports 5 or 10 seconds.",
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15401,13 +15386,7 @@ export const i2vModels = [
         ],
         "default": 5
       },
-      "sound": {
-        "type": "boolean",
-        "title": "Sound",
-        "name": "sound",
-        "description": "Whether sound is generated simultaneously when generating a video.",
-        "default": true
-      }
+      "sound": KLING_SOUND_INPUT
     },
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -15420,7 +15399,10 @@ export const i2vModels = [
     "imageField": "images_list",
     "lastImageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
+    "commonParameterRules": PIXVERSE_55_DURATION_RULES,
     "inputs": {
+      ...PIXVERSE_55_SETTINGS,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15429,33 +15411,6 @@ export const i2vModels = [
         "examples": [
           "Slow upward camera glide along the staircase, lanterns gently swaying, stardust drifting in soft spirals, nebula clouds subtly shifting, and the cosmic gateway pulsing with rhythmic light; maintain original colors, composition, and celestial atmosphere with smooth cinematic motion."
         ]
-      },
-      "style": {
-        "type": "string",
-        "title": "Style",
-        "name": "style",
-        "description": "The style of the generated video.",
-        "enum": [
-          "none",
-          "anime",
-          "3d_animation",
-          "clay",
-          "comic",
-          "cyberpunk"
-        ],
-        "default": "none"
-      },
-      "thinking": {
-        "type": "string",
-        "title": "Thinking",
-        "name": "thinking",
-        "description": "Prompt optimization mode for model decision.",
-        "enum": [
-          "auto",
-          "enabled",
-          "disabled"
-        ],
-        "default": "auto"
       },
       "aspect_ratio": {
         "type": "string",
@@ -15504,20 +15459,6 @@ export const i2vModels = [
           10
         ],
         "default": 5
-      },
-      "audio": {
-        "type": "boolean",
-        "title": "Audio",
-        "name": "audio",
-        "description": "Enable audio generation (BGM, SFX, dialogue).",
-        "default": false
-      },
-      "multi_clip": {
-        "type": "boolean",
-        "title": "Multi Clip",
-        "name": "multi_clip",
-        "description": "Enable multi-clip generation with dynamic camera changes.",
-        "default": false
       }
     },
     "provider": "pixverse",
@@ -15530,6 +15471,7 @@ export const i2vModels = [
     "family": "wan2.2",
     "imageField": "image_url",
     "hasPrompt": true,
+    "aspectRatioMode": "inherited",
     "promptRequired": true,
     "inputs": {
       "prompt": {
@@ -15574,7 +15516,10 @@ export const i2vModels = [
     "family": "wan2.6",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
+      "audio_url": WAN_AUDIO_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15631,6 +15576,7 @@ export const i2vModels = [
     "lastImageField": "last_image",
     "hasPrompt": true,
     "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15665,7 +15611,12 @@ export const i2vModels = [
     "hasPrompt": true,
     "promptRequired": true,
     "maxImages": 7,
+    "required": ["prompt", "images_list"],
     "inputs": {
+      "images_list": {
+        type: "array", items: { type: "string" }, title: "Reference images",
+        name: "images_list", minItems: 1, maxItems: 7,
+      },
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15860,6 +15811,7 @@ export const i2vModels = [
     "family": "ltx",
     "imageField": "image_url",
     "hasPrompt": true,
+    "promptRequired": true,
     "inputs": {
       "prompt": {
         "type": "string",
@@ -15898,6 +15850,7 @@ export const i2vModels = [
   },
   {
     "id": "kling-v3.0-omni-standard-image-to-video",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling v3.0 Omni Standard Image To Video",
     "endpoint": "kling-v3.0-omni-standard-image-to-video",
     "family": "kling-v3.0-omni",
@@ -15906,6 +15859,7 @@ export const i2vModels = [
     "promptRequired": true,
     "maxImages": 4,
     "inputs": {
+      "images_list": KLING_OMNI_REFERENCE_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -15962,6 +15916,7 @@ export const i2vModels = [
   },
   {
     "id": "kling-v3.0-omni-pro-image-to-video",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling v3.0 Omni Pro Image To Video",
     "endpoint": "kling-v3.0-omni-pro-image-to-video",
     "family": "kling-v3.0-omni",
@@ -15970,6 +15925,7 @@ export const i2vModels = [
     "promptRequired": true,
     "maxImages": 4,
     "inputs": {
+      "images_list": KLING_OMNI_REFERENCE_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -16026,6 +15982,7 @@ export const i2vModels = [
   },
   {
     "id": "kling-v3.0-omni-4k-image-to-video",
+    "fixedParameters": { resolution: "4K" },
     "name": "Kling v3.0 Omni 4K Image To Video",
     "endpoint": "kling-v3.0-omni-4k-image-to-video",
     "family": "kling-v3.0-omni",
@@ -16034,6 +15991,7 @@ export const i2vModels = [
     "promptRequired": true,
     "maxImages": 4,
     "inputs": {
+      "images_list": KLING_OMNI_REFERENCE_INPUT,
       "prompt": {
         "type": "string",
         "title": "Prompt",
@@ -16083,6 +16041,7 @@ export const i2vModels = [
   },
   {
     "id": "kling-v3.0-pro-image-to-video",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling v3.0 Pro Image To Video",
     "endpoint": "kling-v3.0-pro-image-to-video",
     "family": "kling-v3.0",
@@ -16090,6 +16049,7 @@ export const i2vModels = [
     "lastImageField": "last_image",
     "hasPrompt": true,
     "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16110,19 +16070,14 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "generate_audio": {
-        "type": "boolean",
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio for the video",
-        "default": true
-      }
+      "generate_audio": KLING_AUDIO_INPUT
     },
     "provider": "kling",
     "provider_name": "Kling AI"
   },
   {
     "id": "kling-v3.0-standard-image-to-video",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling v3.0 Standard Image To Video",
     "endpoint": "kling-v3.0-standard-image-to-video",
     "family": "kling-v3.0",
@@ -16130,6 +16085,7 @@ export const i2vModels = [
     "lastImageField": "last_image",
     "hasPrompt": true,
     "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -16150,13 +16106,7 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "generate_audio": {
-        "type": "boolean",
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio for the video",
-        "default": true
-      }
+      "generate_audio": KLING_AUDIO_INPUT
     },
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -16168,6 +16118,7 @@ export const i2vModels = [
     "family": "seedance-v2.0",
     "imageField": "images_list",
     "hasPrompt": true,
+    "promptRequired": true,
     "maxImages": 5,
     "inputs": {
       "prompt": {
@@ -16716,6 +16667,7 @@ export const i2vModels = [
     "imageField": "image_url",
     "lastImageField": "last_image",
     "hasPrompt": true,
+    "aspectRatioMode": "inherited",
     "promptRequired": true,
     "inputs": {
       "prompt": {
@@ -16786,6 +16738,7 @@ export const i2vModels = [
     "endpoint": "wan2.7-reference-to-video",
     "family": "wan2.7",
     "imageField": "images_list",
+    "imageOptional": true,
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -17096,7 +17049,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -17157,7 +17111,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -17219,7 +17174,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -17283,7 +17239,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -17790,7 +17747,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -17875,7 +17833,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -17884,6 +17843,7 @@ export const i2vModels = [
     "id": "happy-horse-1-image-to-video-1080p",
     "name": "Happy Horse 1 Image to Video 1080P",
     "endpoint": "happy-horse-1-image-to-video-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "family": "happy-horse-1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -17943,6 +17903,7 @@ export const i2vModels = [
     "id": "happy-horse-1-image-to-video-720p",
     "name": "Happy Horse 1 Image to Video 720P",
     "endpoint": "happy-horse-1-image-to-video-720p",
+    "fixedParameters": { "resolution": "720p" },
     "family": "happy-horse-1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -18111,7 +18072,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -18172,7 +18134,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -18257,7 +18220,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -18342,7 +18306,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -18404,13 +18369,15 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
   },
   {
     "id": "kling-v3.0-4k-image-to-video",
+    "fixedParameters": { resolution: "4K" },
     "name": "Kling v3.0 4K",
     "endpoint": "kling-v3.0-4k-image-to-video",
     "family": "kling-v3.0",
@@ -18418,6 +18385,7 @@ export const i2vModels = [
     "lastImageField": "last_image",
     "hasPrompt": true,
     "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "examples": [
@@ -18458,13 +18426,7 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "generate_audio": {
-        "type": "boolean",
-        "default": true,
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio for the video"
-      }
+      "generate_audio": KLING_AUDIO_INPUT
     },
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -18798,6 +18760,7 @@ export const i2vModels = [
     "id": "vidu-q2-pro-image-to-video",
     "name": "Vidu Q2 Pro",
     "endpoint": "vidu-q2-pro-image-to-video",
+    "commonParameterRules": VIDU_Q2_MUSIC_RULES,
     "family": "vidu-q2",
     "imageField": "image_url",
     "hasPrompt": true,
@@ -18855,13 +18818,7 @@ export const i2vModels = [
         "maxValue": 8,
         "step": 1
       },
-      "bgm": {
-        "type": "boolean",
-        "title": "Bgm",
-        "name": "bgm",
-        "description": "Add background music to the output. When enabled, duration must be exactly 4 seconds.",
-        "default": false
-      },
+      "bgm": VIDU_Q2_MUSIC_INPUT,
       "movement_amplitude": {
         "enum": [
           "auto",
@@ -18883,6 +18840,7 @@ export const i2vModels = [
     "id": "vidu-q2-turbo-image-to-video",
     "name": "Vidu Q2 Turbo",
     "endpoint": "vidu-q2-turbo-image-to-video",
+    "commonParameterRules": VIDU_Q2_MUSIC_RULES,
     "family": "vidu-q2",
     "imageField": "image_url",
     "hasPrompt": true,
@@ -18940,13 +18898,7 @@ export const i2vModels = [
         "maxValue": 8,
         "step": 1
       },
-      "bgm": {
-        "type": "boolean",
-        "title": "Bgm",
-        "name": "bgm",
-        "description": "Add background music to the output. When enabled, duration must be exactly 4 seconds.",
-        "default": false
-      },
+      "bgm": VIDU_Q2_MUSIC_INPUT,
       "movement_amplitude": {
         "enum": [
           "auto",
@@ -18968,6 +18920,7 @@ export const i2vModels = [
     "id": "happy-horse-1-reference-to-video-1080p",
     "name": "HappyHorse 1.0 Reference 1080P",
     "endpoint": "happy-horse-1-reference-to-video-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "family": "happy-horse-1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -18995,6 +18948,7 @@ export const i2vModels = [
         },
         "title": "Reference Images",
         "name": "images_list",
+        "minItems": 1,
         "maxItems": 9
       },
       "aspect_ratio": {
@@ -19021,16 +18975,7 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "seed": {
-        "type": "int",
-        "title": "Seed",
-        "name": "seed",
-        "description": "Optional random seed for reproducibility (0-2147483647).",
-        "default": 0,
-        "minValue": 0,
-        "maxValue": 2147483647,
-        "step": 1
-      }
+      "seed": HAPPY_HORSE_SEED_INPUT
     },
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -19039,6 +18984,7 @@ export const i2vModels = [
     "id": "happy-horse-1-reference-to-video-720p",
     "name": "HappyHorse 1.0 Reference 720P",
     "endpoint": "happy-horse-1-reference-to-video-720p",
+    "fixedParameters": { "resolution": "720p" },
     "family": "happy-horse-1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -19066,6 +19012,7 @@ export const i2vModels = [
         },
         "title": "Reference Images",
         "name": "images_list",
+        "minItems": 1,
         "maxItems": 9
       },
       "aspect_ratio": {
@@ -19092,16 +19039,7 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "seed": {
-        "type": "int",
-        "title": "Seed",
-        "name": "seed",
-        "description": "Optional random seed for reproducibility (0-2147483647).",
-        "default": 0,
-        "minValue": 0,
-        "maxValue": 2147483647,
-        "step": 1
-      }
+      "seed": HAPPY_HORSE_SEED_INPUT
     },
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -19214,8 +19152,6 @@ export const i2vModels = [
     "family": "video-generation",
     "imageField": "images_list",
     "hasPrompt": true,
-    "aspectRatioMode": "inherited",
-    "parameterNotice": "Aspect ratio is inherited from the input image.",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19226,20 +19162,7 @@ export const i2vModels = [
           "The whale suddenly begins swimming through the apartment as if the room is underwater. Furniture crashes into walls, water bursts outward, and the whale breaks through multiple rooms while the camera follows beside it."
         ]
       },
-      "images_list": {
-        "examples": [
-          "https://cdn.muapi.ai/assets/grok-imagine-video-1-5-preview.jpg"
-        ],
-        "description": "Upload or provide image URLs to use as input for video generation.",
-        "field": "images_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "title": "Image URLs",
-        "name": "images_list",
-        "maxItems": 7
-      },
+      "images_list": GROK_IMAGE_INPUT,
       "aspect_ratio": {
         "enum": [
           "auto",
@@ -19257,17 +19180,7 @@ export const i2vModels = [
         "description": "Aspect ratio for the generated video. Use 'auto' to match the input image.",
         "default": "auto"
       },
-      "resolution": {
-        "enum": [
-          "480p",
-          "720p"
-        ],
-        "type": "string",
-        "title": "Resolution",
-        "name": "resolution",
-        "description": "Output video resolution.",
-        "default": "480p"
-      },
+      "resolution": GROK_RESOLUTION_INPUT,
       "duration": {
         "type": "int",
         "title": "Duration (seconds)",
@@ -19284,12 +19197,14 @@ export const i2vModels = [
   },
   {
     "id": "kling-v3-turbo-standard-image-to-video",
+    "fixedParameters": { resolution: "720p" },
     "name": "Kling v3 Turbo Standard",
     "endpoint": "kling-v3-turbo-standard-image-to-video",
     "family": "kling-v3.0",
     "imageField": "image_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19326,12 +19241,14 @@ export const i2vModels = [
   },
   {
     "id": "kling-v3-turbo-pro-image-to-video",
+    "fixedParameters": { resolution: "1080p" },
     "name": "Kling v3 Turbo Pro",
     "endpoint": "kling-v3-turbo-pro-image-to-video",
     "family": "kling-v3.0",
     "imageField": "image_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "aspectRatioMode": "inherited",
     "inputs": {
       "prompt": {
         "type": "string",
@@ -19373,7 +19290,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-image-to-video",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -19423,7 +19339,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -19517,6 +19434,7 @@ export const i2vModels = [
     "id": "happy-horse-1.1-image-to-video-1080p",
     "name": "Happy Horse 1.1 Image to Video 1080P",
     "endpoint": "happy-horse-1.1-image-to-video-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "family": "happy-horse-1.1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -19576,6 +19494,7 @@ export const i2vModels = [
     "id": "happy-horse-1.1-image-to-video-720p",
     "name": "Happy Horse 1.1 Image to Video 720P",
     "endpoint": "happy-horse-1.1-image-to-video-720p",
+    "fixedParameters": { "resolution": "720p" },
     "family": "happy-horse-1.1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -19635,6 +19554,7 @@ export const i2vModels = [
     "id": "happy-horse-1.1-reference-to-video-1080p",
     "name": "HappyHorse 1.1 Reference 1080P",
     "endpoint": "happy-horse-1.1-reference-to-video-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "family": "happy-horse-1.1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -19662,6 +19582,7 @@ export const i2vModels = [
         },
         "title": "Reference Images",
         "name": "images_list",
+        "minItems": 1,
         "maxItems": 9
       },
       "aspect_ratio": {
@@ -19688,16 +19609,7 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "seed": {
-        "type": "int",
-        "title": "Seed",
-        "name": "seed",
-        "description": "Optional random seed for reproducibility (0-2147483647).",
-        "default": 0,
-        "minValue": 0,
-        "maxValue": 2147483647,
-        "step": 1
-      }
+      "seed": HAPPY_HORSE_SEED_INPUT
     },
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -19706,6 +19618,7 @@ export const i2vModels = [
     "id": "happy-horse-1.1-reference-to-video-720p",
     "name": "HappyHorse 1.1 Reference 720P",
     "endpoint": "happy-horse-1.1-reference-to-video-720p",
+    "fixedParameters": { "resolution": "720p" },
     "family": "happy-horse-1.1",
     "imageField": "images_list",
     "hasPrompt": true,
@@ -19733,6 +19646,7 @@ export const i2vModels = [
         },
         "title": "Reference Images",
         "name": "images_list",
+        "minItems": 1,
         "maxItems": 9
       },
       "aspect_ratio": {
@@ -19759,16 +19673,7 @@ export const i2vModels = [
         "maxValue": 15,
         "step": 1
       },
-      "seed": {
-        "type": "int",
-        "title": "Seed",
-        "name": "seed",
-        "description": "Optional random seed for reproducibility (0-2147483647).",
-        "default": 0,
-        "minValue": 0,
-        "maxValue": 2147483647,
-        "step": 1
-      }
+      "seed": HAPPY_HORSE_SEED_INPUT
     },
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -19829,7 +19734,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -19891,7 +19797,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -19976,7 +19883,8 @@ export const i2vModels = [
         "minValue": 4,
         "maxValue": 15,
         "step": 1
-      }
+      },
+      "high_bitrate": SEEDANCE_HIGH_BITRATE_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -19988,10 +19896,11 @@ export const i2vModels = [
     "family": "seedance-2.5",
     "imageField": "image_url",
     "lastImageField": "last_image",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
+      "resolution": SEEDANCE_25_RESOLUTION_INPUT,
+      "generate_audio": SEEDANCE_GENERATE_AUDIO_INPUT,
       "prompt": {
         "examples": [
           "Bold, high-energy dolly forward through a neon-drenched alley at night, sparks flying off a passing train, exaggerated lighting contrast, dramatic camera shake, photorealistic 4K quality."
@@ -20011,29 +19920,6 @@ export const i2vModels = [
         "title": "Image URL",
         "name": "image_url"
       },
-      "last_image": {
-        "examples": [
-          null
-        ],
-        "description": "Optional URL of the last frame image for first-last frame control.",
-        "field": "image",
-        "type": "string",
-        "title": "Last Image",
-        "name": "last_image"
-      },
-      "resolution": {
-        "enum": [
-          "480p",
-          "720p",
-          "1080p",
-          "4K"
-        ],
-        "title": "Resolution",
-        "name": "resolution",
-        "type": "string",
-        "description": "Output video resolution.",
-        "default": "1080p"
-      },
       "duration": {
         "title": "Duration",
         "name": "duration",
@@ -20041,22 +19927,8 @@ export const i2vModels = [
         "description": "The duration of the generated video in seconds.",
         "default": 5,
         "minValue": 4,
-        "maxValue": 16,
+        "maxValue": 30,
         "step": 1
-      },
-      "generate_audio": {
-        "type": "boolean",
-        "title": "Generate Audio",
-        "name": "generate_audio",
-        "description": "Whether to generate audio for the video.",
-        "default": true
-      },
-      "camera_fixed": {
-        "type": "boolean",
-        "title": "Camera Fixed",
-        "name": "camera_fixed",
-        "description": "Whether to fix the camera position.",
-        "default": false
       },
       "high_bitrate": {
         "type": "boolean",
@@ -20064,7 +19936,9 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
+      "seed": SEEDANCE_25_SEED_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -20075,7 +19949,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-image-to-video-480p",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -20125,7 +19998,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -20136,7 +20010,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-first-last-frame",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -20191,7 +20064,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -20202,7 +20076,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-first-last-frame-480p",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -20257,7 +20130,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -20327,23 +20201,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -20444,23 +20302,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -20724,6 +20566,7 @@ export const i2vModels = [
     "family": "minimax-h3",
     "imageField": "image_url",
     "lastImageField": "last_image_url",
+    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -20783,6 +20626,7 @@ export const i2vModels = [
         "field": "image",
         "title": "Reference Images",
         "name": "reference_images",
+        "maxItems": 9,
         "items": {"type": "string"}
       },
       "reference_videos": {
@@ -20790,6 +20634,7 @@ export const i2vModels = [
         "field": "video",
         "title": "Reference Videos",
         "name": "reference_videos",
+        "maxItems": 3,
         "items": {"type": "string"}
       },
       "reference_audios": {
@@ -20797,6 +20642,7 @@ export const i2vModels = [
         "field": "audio",
         "title": "Reference Audio",
         "name": "reference_audios",
+        "maxItems": 3,
         "items": {"type": "string"}
       },
       "aspect_ratio": {
@@ -20831,6 +20677,7 @@ export const i2vModels = [
     "family": "minimax-h3",
     "imageField": "image_url",
     "lastImageField": "last_image",
+    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -20865,7 +20712,8 @@ export const i2vModels = [
         "title": "Duration",
         "name": "duration",
         "default": 5
-      }
+      },
+      "seed": MINIMAX_H3_OPEN_SEED_INPUT
     },
     "provider": "minimax",
     "provider_name": "Minimax"
@@ -20930,7 +20778,8 @@ export const i2vModels = [
         "title": "Duration",
         "name": "duration",
         "default": 5
-      }
+      },
+      "seed": MINIMAX_H3_OPEN_SEED_INPUT
     },
     "provider": "minimax",
     "provider_name": "Minimax"
@@ -21208,7 +21057,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-image-to-video-1080p",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21258,7 +21106,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21269,7 +21118,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-image-to-video-4k",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21319,7 +21167,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21330,7 +21179,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-first-last-frame-1080p",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21385,7 +21233,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21396,7 +21245,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-first-last-frame-4k",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21451,7 +21299,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21521,23 +21370,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -21638,23 +21471,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -21696,7 +21513,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-image-to-video",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21746,7 +21562,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21757,7 +21574,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-image-to-video-480p",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21807,7 +21623,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21818,7 +21635,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-image-to-video-480p",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21868,7 +21684,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21879,7 +21696,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-image-to-video-1080p",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21929,7 +21745,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -21940,7 +21757,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-image-to-video-1080p",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -21990,7 +21806,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22001,7 +21818,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-image-to-video-4k",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22051,7 +21867,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22062,7 +21879,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-image-to-video-4k",
     "family": "seedance-2.5",
     "imageField": "image_url",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22112,7 +21928,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22123,7 +21940,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-first-last-frame",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22178,7 +21994,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22189,7 +22006,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-first-last-frame",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22244,7 +22060,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22255,7 +22072,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-first-last-frame-480p",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22310,7 +22126,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22321,7 +22138,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-first-last-frame-480p",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22376,7 +22192,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22387,7 +22204,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-first-last-frame-1080p",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22442,7 +22258,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22453,7 +22270,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-first-last-frame-1080p",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22508,7 +22324,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22519,7 +22336,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-intl-first-last-frame-4k",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22574,7 +22390,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22585,7 +22402,6 @@ export const i2vModels = [
     "endpoint": "seedance-2.5-spicy-first-last-frame-4k",
     "family": "seedance-2.5",
     "imageField": "images_list",
-    "aspectRatioMode": "inherited",
     "hasPrompt": true,
     "promptRequired": true,
     "inputs": {
@@ -22640,7 +22456,8 @@ export const i2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -22710,23 +22527,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -22827,23 +22628,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -22944,23 +22729,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -23061,23 +22830,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -23178,23 +22931,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -23295,23 +23032,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -23412,23 +23133,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -23529,23 +23234,7 @@ export const i2vModels = [
         "maxValue": 30,
         "step": 1
       },
-      "aspect_ratio": {
-        "enum": [
-          "adaptive",
-          "16:9",
-          "9:16",
-          "1:1",
-          "4:3",
-          "3:4",
-          "21:9",
-          "9:21"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output video.",
-        "default": "16:9"
-      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT,
       "seed": {
         "type": "int",
         "title": "Seed",
@@ -24958,6 +24647,7 @@ export const v2vModels = [
     "videoField": "video_url",
     "imageField": "image_url",
     "hasPrompt": true,
+    "inputs": KLING_MOTION_INPUTS,
     "promptRequired": true,
     "description": "Kling v2.6 Pro Motion Control allows precise control over camera movement, subject motion, and scene dynamics during video generation.",
     "provider": "kling",
@@ -24971,6 +24661,7 @@ export const v2vModels = [
     "videoField": "video_url",
     "imageField": "image_url",
     "hasPrompt": true,
+    "inputs": KLING_3_MOTION_INPUTS,
     "description": "Kling V3.0 Standard Motion Control allows for precise control over the camera and subject movement in generated videos.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -24983,6 +24674,7 @@ export const v2vModels = [
     "videoField": "video_url",
     "imageField": "image_url",
     "hasPrompt": true,
+    "inputs": KLING_3_MOTION_INPUTS,
     "description": "Kling V3.0 Pro Motion Control provides the highest level of detail and control for video generation.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -25054,6 +24746,9 @@ export const v2vModels = [
     "videoField": "video_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": {
+      "resolution": WAN_22_RESOLUTION_INPUT
+    },
     "description": "Easily modify existing videos using simple text commands.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -25117,16 +24812,7 @@ export const v2vModels = [
       "images_list",
       "video_url"
     ],
-    "inputs": {
-      "images_list": {
-        "field": "images_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "maxItems": 4
-      }
-    },
+    "inputs": KLING_O1_PRO_EDIT_INPUTS,
     "description": "Kling O1 Video Edit lets you send an existing video clip plus an instruction/prompt to edit or transform the clip while preserving temporal coherence and subject identity.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -25146,16 +24832,7 @@ export const v2vModels = [
       "images_list",
       "video_url"
     ],
-    "inputs": {
-      "images_list": {
-        "field": "images_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "maxItems": 4
-      }
-    },
+    "inputs": KLING_O1_PRO_EDIT_INPUTS,
     "description": "Video Edit Fast is the lightweight, high-speed editing mode of Kling O1.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -25175,16 +24852,7 @@ export const v2vModels = [
       "images_list",
       "video_url"
     ],
-    "inputs": {
-      "images_list": {
-        "field": "images_list",
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "maxItems": 4
-      }
-    },
+    "inputs": KLING_O1_EDIT_INPUTS,
     "description": "Kling O1 Standard Video-to-Video Edit modifies an existing video while preserving its original structure, motion, and realism.",
     "provider": "kling",
     "provider_name": "Kling AI"
@@ -25197,6 +24865,13 @@ export const v2vModels = [
     "videoField": "video_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": {
+      "resolution": WAN_22_RESOLUTION_INPUT,
+      "duration": {
+        "type": "integer", "title": "Duration", "name": "duration",
+        "enum": [5, 8], "default": 5
+      }
+    },
     "description": "Wan-2.2-spicy Video Extend continues an existing video by generating new frames that match the original style but add stronger motion, bolder effects, and spicier dramatics.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -25209,6 +24884,7 @@ export const v2vModels = [
     "videoField": "video_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": SEEDANCE_15_EXTEND_INPUTS,
     "description": "Seedance v1.5 Pro Video Extend continues an existing video by generating additional frames that match the original scene’s style, lighting, motion, and mood.",
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -25221,6 +24897,10 @@ export const v2vModels = [
     "videoField": "video_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": {
+      ...SEEDANCE_15_EXTEND_INPUTS,
+      "resolution": { ...SEEDANCE_15_EXTEND_INPUTS.resolution, "enum": ["720p", "1080p"] }
+    },
     "description": "Seedance v1.5 Pro Video Extend Fast quickly extends an existing video by generating a short continuation that matches the original style, motion, and lighting.",
     "provider": "bytedance",
     "provider_name": "ByteDance"
@@ -25266,6 +24946,15 @@ export const v2vModels = [
     "family": "ltx2.3",
     "videoField": "video_url",
     "hasPrompt": true,
+    "inputs": {
+      "duration": {
+        "title": "Extend duration",
+        "name": "duration",
+        "type": "integer",
+        "enum": Array.from({ length: 20 }, (_, index) => index + 1),
+        "default": 5
+      }
+    },
     "description": "LTX-2.3 Video Extend seamlessly continues an existing video clip by generating additional frames that match the original motion, style, and scene composition.",
     "provider": "lightricks",
     "provider_name": "Lightricks"
@@ -25288,6 +24977,28 @@ export const v2vModels = [
     "family": "pixverse-v6",
     "videoField": "video_url",
     "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "resolution": {
+        "type": "string", "title": "Resolution", "name": "resolution",
+        "enum": ["360p", "540p", "720p", "1080p"], "default": "720p"
+      },
+      "duration": {
+        "type": "integer", "title": "Duration", "name": "duration",
+        "enum": Array.from({ length: 15 }, (_, index) => index + 1), "default": 5
+      },
+      "generate_audio_switch": {
+        "type": "boolean", "title": "Generate audio", "name": "generate_audio_switch",
+        "default": false
+      },
+      "negative_prompt": {
+        "type": "string", "title": "Negative prompt", "name": "negative_prompt"
+      },
+      "style": {
+        "type": "string", "title": "Style", "name": "style",
+        "enum": ["anime", "3d_animation", "clay", "comic", "cyberpunk"]
+      }
+    },
     "description": "Extend any existing video with new frames using PixVerse V6.",
     "provider": "pixverse",
     "provider_name": "Pixverse"
@@ -25301,6 +25012,15 @@ export const v2vModels = [
     "audioField": "audio_url",
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": {
+      "audio_url": WAN_AUDIO_INPUT,
+      "negative_prompt": WAN_NEGATIVE_PROMPT_INPUT,
+      "resolution": WAN_27_RESOLUTION_INPUT,
+      "duration": {
+        "type": "integer", "title": "Duration", "name": "duration",
+        "minValue": 5, "maxValue": 15, "default": 5
+      }
+    },
     "description": "Extend existing videos seamlessly with Wan 2.7.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -25316,6 +25036,20 @@ export const v2vModels = [
     "imageOptional": true,
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": {
+      "negative_prompt": WAN_NEGATIVE_PROMPT_INPUT,
+      "resolution": WAN_27_RESOLUTION_INPUT,
+      "duration": {
+        "type": "integer", "title": "Duration", "name": "duration",
+        "description": "Use 0 to match the source video length, up to 10 seconds.",
+        "minValue": 0, "maxValue": 10, "default": 0
+      },
+      "audio_setting": {
+        "type": "string", "title": "Audio", "name": "audio_setting",
+        "description": "Follow the prompt or keep the source audio.",
+        "enum": ["auto", "origin"], "default": "auto"
+      }
+    },
     "description": "Perform prompt-driven video editing with multi-image reference support.",
     "provider": "alibaba",
     "provider_name": "Alibaba"
@@ -25324,12 +25058,14 @@ export const v2vModels = [
     "id": "happy-horse-1-video-edit-1080p",
     "name": "HappyHorse 1.0 Edit 1080P",
     "endpoint": "happy-horse-1-video-edit-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "family": "happy-horse-1",
     "videoField": "video_url",
     "imageField": "images_list",
     "maxImages": 5,
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": HAPPY_HORSE_EDIT_INPUTS,
     "description": "Happy Horse 1.0 Video Edit (1080p) - modify an input video at 1080p using a natural-language instruction with optional reference images.",
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -25338,12 +25074,14 @@ export const v2vModels = [
     "id": "happy-horse-1-video-edit-720p",
     "name": "HappyHorse 1.0 Edit 720P",
     "endpoint": "happy-horse-1-video-edit-720p",
+    "fixedParameters": { "resolution": "720p" },
     "family": "happy-horse-1",
     "videoField": "video_url",
     "imageField": "images_list",
     "maxImages": 5,
     "hasPrompt": true,
     "promptRequired": true,
+    "inputs": HAPPY_HORSE_EDIT_INPUTS,
     "description": "Happy Horse 1.0 Video Edit (720p) - modify an input video at 720p using a natural-language instruction with optional reference images.",
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -25352,9 +25090,14 @@ export const v2vModels = [
     "id": "happy-horse-1.1-video-edit-1080p",
     "name": "Happy Horse 1.1 Video Edit 1080P",
     "endpoint": "happy-horse-1.1-video-edit-1080p",
+    "fixedParameters": { "resolution": "1080p" },
     "family": "happy-horse-1.1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 5,
     "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": HAPPY_HORSE_EDIT_INPUTS,
     "description": "Happy Horse 1.1 Video Edit (1080p) — modify an input video using natural-language instructions with optional reference images.",
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -25363,9 +25106,14 @@ export const v2vModels = [
     "id": "happy-horse-1.1-video-edit-720p",
     "name": "Happy Horse 1.1 Video Edit 720P",
     "endpoint": "happy-horse-1.1-video-edit-720p",
+    "fixedParameters": { "resolution": "720p" },
     "family": "happy-horse-1.1",
     "videoField": "video_url",
+    "imageField": "images_list",
+    "maxImages": 5,
     "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": HAPPY_HORSE_EDIT_INPUTS,
     "description": "Happy Horse 1.1 Video Edit (720p) — modify an input video using natural-language instructions with optional reference images.",
     "provider": "happy-horse",
     "provider_name": "Happy Horse"
@@ -25403,6 +25151,7 @@ export const v2vModels = [
     "videoField": "video_url",
     "imageField": "image_url",
     "hasPrompt": true,
+    "inputs": KLING_MOTION_INPUTS,
     "promptRequired": true,
     "description": "Kling v2.6 Pro Motion Control allows precise control over camera movement, subject motion, and scene dynamics during video generation.",
     "provider": "kling",
@@ -25509,6 +25258,7 @@ export const v2vModels = [
         "name": "video_url"
       },
       "mode": {
+        "configurable": true,
         "enum": [
           "animate",
           "replace"
@@ -25719,7 +25469,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed.",
     "provider": "bytedance",
@@ -25821,7 +25572,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 480p edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed.",
     "provider": "bytedance",
@@ -25923,7 +25675,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 1080p edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed.",
     "provider": "bytedance",
@@ -26025,7 +25778,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 4K edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed.",
     "provider": "bytedance",
@@ -26109,7 +25863,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt.",
     "provider": "bytedance",
@@ -26193,7 +25948,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 480p extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt.",
     "provider": "bytedance",
@@ -26277,7 +26033,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 1080p extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt.",
     "provider": "bytedance",
@@ -26361,7 +26118,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 4K extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt.",
     "provider": "bytedance",
@@ -26463,7 +26221,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -26565,7 +26324,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -26667,7 +26427,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 480p edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -26769,7 +26530,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 480p edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -26871,7 +26633,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 1080p edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -26973,7 +26736,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 1080p edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -27075,7 +26839,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 4K edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -27177,7 +26942,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Edit 4K edits an input video from a natural-language prompt. The reference video drives subject identity, composition, and motion while the model rewrites lighting, style, weather, environment, or specific elements as instructed. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -27261,7 +27027,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -27345,7 +27112,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -27429,7 +27197,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 480p extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -27513,7 +27282,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 480p extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -27597,7 +27367,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 1080p extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -27681,7 +27452,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 1080p extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -27765,7 +27537,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 4K extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This international-region endpoint is served via a Dreamina-hosted deployment of the same Seedance 2.5 model, for traffic outside mainland China.",
     "provider": "bytedance",
@@ -27849,7 +27622,8 @@ export const v2vModels = [
         "name": "high_bitrate",
         "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
         "default": false
-      }
+      },
+      "aspect_ratio": SEEDANCE_25_ASPECT_RATIO_INPUT
     },
     "description": "Seedance 2.5 Video Extend 4K extends an input video with a new cinematic continuation generated from its last frame and a natural-language prompt. This Spicy endpoint is the relaxed-moderation sibling of the standard tier, with lighter content-safety filtering and bolder, higher-contrast output.",
     "provider": "bytedance",
@@ -28427,6 +28201,49 @@ export const getAspectRatiosForRecastModel = (id) => {
   const model = recastModels.find(m => m.id === id);
   return model?.inputs?.aspect_ratio?.enum || [];
 };
+
+// ─── Motion Control Models (Seedance) ───────────────────────────────────────────────
+export const motionControlModels = [
+  {
+    id: "seedance-2.5-motion-control",
+    name: "Seedance 2.5 Motion Control",
+    endpoint: "seedance-2.5-motion-control",
+    family: "seedance",
+    description: "Next-gen motion control with up to 30s duration, multi-image conditioning (up to 30 assets), adaptive aspect ratio, and audio generation.",
+    maxDuration: 30,
+    minDuration: 4,
+    defaultDuration: 5,
+    maxImages: 30,
+    supportsAudio: true,
+    supportsBitrate: true,
+    supportsSeed: true,
+    aspectRatios: ["adaptive", "16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21"],
+    defaultAspectRatio: "16:9"
+  },
+  {
+    id: "seedance-2-motion-control",
+    name: "Seedance 2.0 Motion Control",
+    endpoint: "seedance-2-motion-control",
+    family: "seedance",
+    description: "Extract motion from reference video and rebuild scenes with new character identities (up to 15s, up to 9 assets).",
+    maxDuration: 15,
+    minDuration: 4,
+    defaultDuration: 5,
+    maxImages: 9,
+    supportsAudio: true,
+    supportsQuality: true,
+    supportsSeed: true,
+    aspectRatios: ["16:9", "9:16", "4:3", "1:1", "3:4", "21:9"],
+    defaultAspectRatio: "16:9"
+  }
+];
+
+export const getMotionControlModelById = (id) => motionControlModels.find(m => m.id === id) || motionControlModels[0];
+export const getAspectRatiosForMotionControlModel = (id) => {
+  const model = getMotionControlModelById(id);
+  return model?.aspectRatios || ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"];
+};
+
 
 
 // ── Audio Models ──────────────────────────────────────────────────────────
