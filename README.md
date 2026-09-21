@@ -7,8 +7,8 @@
 
 **Community:** Join [Discord](https://discord.gg/tANKJkHck) for discussions and support
 
-<p align="center"><a href="https://youtu.be/kT1CO4BYV3A"><img src="https://i.ytimg.com/vi/kT1CO4BYV3A/maxresdefault.jpg" width="720"></a></p>
-<p align="center"><a href="https://youtu.be/kT1CO4BYV3A"><b>▶ Watch: Free Unlimited AI Image Generator (Truly no limits, Open Source, No Watermark) </b></a></p>
+<p align="center"><a href="https://youtu.be/I5CV7i1_FxI"><img src="https://i.ytimg.com/vi/I5CV7i1_FxI/maxresdefault.jpg" width="720"></a></p>
+<p align="center"><a href="https://youtu.be/I5CV7i1_FxI"><b>▶ Watch: Free Claude AI Video Generator (via MCP) — Full Tutorial </b></a></p>
 
 <p align="center">
   <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">
@@ -49,6 +49,8 @@ Consumer AI image/video platforms almost all run on paid monthly subscriptions �
 
 This is a curated set of high-value hubs, popular distribution tools, and model-specific integrations rather than a directory of every related repository.
 
+- [awesome-vibecoded-saas](https://github.com/Anil-matcha/awesome-vibecoded-saas) — broader catalog of open-source SaaS alternatives featuring this studio.
+- [Muapi open-source alternatives](https://muapi.ai/open-source/alternative/midjourney) — compare this studio with the Midjourney workflow and its honest scope.
 - [awesome-generative-ai-apps](https://github.com/Anil-matcha/awesome-generative-ai-apps) — catalog of open-source generative-AI applications.
 - [awesome-ai-video-models](https://github.com/Anil-matcha/awesome-ai-video-models) — compare video models by API, price, and capability.
 - [awesome-ai-image-models](https://github.com/Anil-matcha/awesome-ai-image-models) — compare image models by API, price, and quality.
