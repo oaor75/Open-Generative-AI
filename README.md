@@ -7,8 +7,8 @@
 
 **Community:** Join [Discord](https://discord.gg/tANKJkHck) for discussions and support
 
-<p align="center"><a href="https://youtu.be/I5CV7i1_FxI"><img src="https://i.ytimg.com/vi/I5CV7i1_FxI/maxresdefault.jpg" width="720"></a></p>
-<p align="center"><a href="https://youtu.be/I5CV7i1_FxI"><b>▶ Watch: Free Claude AI Video Generator (via MCP) — Full Tutorial </b></a></p>
+<p align="center"><a href="https://youtu.be/gO4HszsAuc4"><img src="https://i.ytimg.com/vi/gO4HszsAuc4/maxresdefault.jpg" width="720"></a></p>
+<p align="center"><a href="https://youtu.be/gO4HszsAuc4"><b>▶ Watch: Stop Paying Full Price for AI Videos You Hate — Seedance 2.5 Draft Mode </b></a></p>
 
 <p align="center">
   <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">

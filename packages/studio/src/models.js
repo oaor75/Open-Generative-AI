@@ -24326,6 +24326,19 @@ export const i2vModels = [
         "name": "last_frame_url",
         "description": "Optional ending keyframe image. Requires first_frame_url to also be set."
       },
+      "duration": {
+        "enum": [
+          4,
+          6,
+          8,
+          10
+        ],
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Duration of the generated video in seconds.",
+        "default": 8
+      },
       "aspect_ratio": {
         "enum": [
           "16:9",
