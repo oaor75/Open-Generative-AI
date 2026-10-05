@@ -7,8 +7,9 @@
 
 **Community:** Join [Discord](https://discord.gg/tANKJkHck) for discussions and support
 
-<p align="center"><a href="https://youtu.be/gO4HszsAuc4"><img src="https://i.ytimg.com/vi/gO4HszsAuc4/maxresdefault.jpg" width="720"></a></p>
-<p align="center"><a href="https://youtu.be/gO4HszsAuc4"><b>▶ Watch: Stop Paying Full Price for AI Videos You Hate — Seedance 2.5 Draft Mode </b></a></p>
+
+<p align="center"><a href="https://youtu.be/ZGDImpmyHVo"><img src="https://i.ytimg.com/vi/ZGDImpmyHVo/maxresdefault.jpg" width="720"></a></p>
+<p align="center"><a href="https://youtu.be/ZGDImpmyHVo"><b>▶ Watch: Best Free Uncensored AI Models 2026 (No GPU) </b></a></p>
 
 <p align="center">
   <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">
@@ -45,6 +46,14 @@ Consumer AI image/video platforms almost all run on paid monthly subscriptions �
 
 ---
 
+## API examples and model references
+
+- [OpenAI API examples](https://github.com/Anil-matcha/OpenAI-API) — GPT Image, Sora, and GPT endpoints through Muapi.
+- [Google Gemini Media API examples](https://github.com/Anil-matcha/Google-Gemini-Media-API) — Nano Banana, Imagen, Veo, Gemini Omni, and speech endpoints.
+- [MiniMax Media API examples](https://github.com/Anil-matcha/MiniMax-Media-API) — Hailuo, H3 Max, speech, and music workflows.
+- [Kling Video API examples](https://github.com/Anil-matcha/Kling-Video-API) — Kling text-to-video, image-to-video, and motion control.
+- [Qwen Image API examples](https://github.com/Anil-matcha/Qwen-Image-API) — Qwen image generation, editing, and LoRA workflows through Muapi.
+
 ## Related Projects
 
 This is a curated set of high-value hubs, popular distribution tools, and model-specific integrations rather than a directory of every related repository.
@@ -56,7 +65,7 @@ This is a curated set of high-value hubs, popular distribution tools, and model-
 - [awesome-ai-image-models](https://github.com/Anil-matcha/awesome-ai-image-models) — compare image models by API, price, and quality.
 - [AI-Youtube-Shorts-Generator](https://github.com/SamurAIGPT/AI-Youtube-Shorts-Generator) — Open-source Opus Clip alternative application.
 - [Open-AI-Design-Agent](https://github.com/Anil-matcha/Open-AI-Design-Agent) — Ppen-source autonomous AI design agent.
-- [Generative-Media-Skills](https://github.com/SamurAIGPT/Generative-Media-Skills) — Agent-ready skills for driving generative-media workflows.
+- [muapi-skills](https://github.com/SamurAIGPT/muapi-skills) — Agent-ready skills for driving generative-media workflows.
 - [Seedance-2.5-API](https://github.com/SamurAIGPT/Seedance-2.5-API) — Python SDK for Seedance 2.5 video generation.
 
 ## 🌐 Try it Online — No Install Required

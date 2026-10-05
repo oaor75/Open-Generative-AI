@@ -37,15 +37,15 @@ muapi image generate "a cyberpunk city" \\
     tag: 'Skills',
     title: 'Generative Media Skills',
     icon: FaStar,
-    code: `npx skills add SamurAIGPT/Generative-Media-Skills --all`,
-    href: 'https://github.com/SamurAIGPT/Generative-Media-Skills',
+    code: `npx skills add SamurAIGPT/muapi-skills --all`,
+    href: 'https://github.com/SamurAIGPT/muapi-skills',
   },
 ];
 
 const QUICK_STEPS = [
   { id: 'installCli', num: '1', code: 'npm install -g muapi-cli' },
   { id: 'signIn', num: '2', code: 'muapi auth login' },
-  { id: 'addSkills', num: '3', code: 'npx skills add SamurAIGPT/Generative-Media-Skills' },
+  { id: 'addSkills', num: '3', code: 'npx skills add SamurAIGPT/muapi-skills' },
 ];
 
 const EXAMPLES = [

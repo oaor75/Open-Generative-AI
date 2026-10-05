@@ -869,7 +869,7 @@ export default function MotionControlStudio({
   };
 
   // Model compact display label for button
-  const modelShortName = selectedModelId === "seedance-2.5-motion-control" ? "Seedance 2.5" : "Seedance 2.0";
+  const modelShortName = selectedModel.shortName || (selectedModelId === "seedance-2.5-motion-control" ? "Seedance 2.5" : "Seedance 2.0");
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -1269,7 +1269,7 @@ export default function MotionControlStudio({
                   </PromptPopoverHeader>
 
                   {/* Seedance 2.5: High Bitrate Toggle */}
-                  {selectedModelId === "seedance-2.5-motion-control" && (
+                  {selectedModel.supportsBitrate && (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                       <div className="flex flex-col">
                         <span className="text-xs font-semibold text-white">{copy.labels.highBitrate}</span>

@@ -4026,6 +4026,303 @@ export const t2iModels = [
     },
     "provider": "alibaba",
     "provider_name": "Alibaba"
+  },
+
+  {
+    "id": "gpt-image-2.5-flare-text-to-image",
+    "name": "GPT Image 2.5 Flare Text to Image",
+    "endpoint": "gpt-image-2.5-flare-text-to-image",
+    "family": "gpt-image-2.5",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "A girl doing livestream makeup tutorials while tiny workers inside her mirror physically repaint the reflection in real time, miniature ladders, paint buckets, glowing vanity lights, cluttered modern bedroom aesthetic, insanely detailed reflections, playful surreal realism, highly creative composition, luxury commercial quality."
+        ],
+        "description": "Text prompt describing the image to generate. Maximum 20,000 characters.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "1:1",
+          "3:2",
+          "2:3",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "27:16",
+          "16:27",
+          "9:8",
+          "8:9"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output image aspect ratio. Note: images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; 1:1 cannot be converted to 4K — otherwise the task will fail to create.",
+        "default": "auto"
+      },
+      "resolution": {
+        "enum": [
+          "1K",
+          "2K",
+          "4K"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Image resolution. Note: images with a 1:1 aspect ratio cannot be converted to 4K. Images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; otherwise the task will fail to create.",
+        "default": "2K"
+      },
+      "quality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "type": "string",
+        "title": "Quality",
+        "name": "quality",
+        "description": "Output quality tier. \"high\" is rendered by the primary provider; \"low\", \"medium\", \"xhigh\", and \"max\" render on an alternate provider with a wider quality range.",
+        "default": "high"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "KIE_AI",
+    "description": "Generate high-fidelity images from text prompts using GPT-Image-2.5 Flare, OpenAI's default GPT Image 2.5 tier, with sharper detail, richer textures, and up to 50% lower latency than GPT Image 2.",
+    "example_url": "https://cdn.muapi.ai/assets/97abf8ec-65f6-4057-92df-2c5a4f1a29df.avif",
+    "image_url": "https://cdn.muapi.ai/assets/97abf8ec-65f6-4057-92df-2c5a4f1a29df.avif"
+  },
+  {
+    "id": "gpt-image-2.5-sunburst-text-to-image",
+    "name": "GPT Image 2.5 Sunburst Text to Image",
+    "endpoint": "gpt-image-2.5-sunburst-text-to-image",
+    "family": "gpt-image-2.5",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "A girl doing livestream makeup tutorials while tiny workers inside her mirror physically repaint the reflection in real time, miniature ladders, paint buckets, glowing vanity lights, cluttered modern bedroom aesthetic, insanely detailed reflections, playful surreal realism, highly creative composition, luxury commercial quality."
+        ],
+        "description": "Text prompt describing the image to generate. Maximum 20,000 characters.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "1:1",
+          "3:2",
+          "2:3",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "27:16",
+          "16:27",
+          "9:8",
+          "8:9"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output image aspect ratio. Note: images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; 1:1 cannot be converted to 4K — otherwise the task will fail to create.",
+        "default": "auto"
+      },
+      "resolution": {
+        "enum": [
+          "1K",
+          "2K",
+          "4K"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Image resolution. Note: images with a 1:1 aspect ratio cannot be converted to 4K. Images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; otherwise the task will fail to create.",
+        "default": "2K"
+      },
+      "quality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "type": "string",
+        "title": "Quality",
+        "name": "quality",
+        "description": "Output quality tier. \"high\" is rendered by the primary provider; \"low\", \"medium\", \"xhigh\", and \"max\" render on an alternate provider with a wider quality range.",
+        "default": "high"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "KIE_AI",
+    "description": "Generate high-fidelity images from text prompts using GPT-Image-2.5 Sunburst, OpenAI's slower, higher-precision GPT Image 2.5 tier, tuned for maximum edit precision on premium creative work.",
+    "example_url": "https://cdn.muapi.ai/assets/d0d4707f-33e4-40bb-899d-e3265ae23670.avif",
+    "image_url": "https://cdn.muapi.ai/assets/d0d4707f-33e4-40bb-899d-e3265ae23670.avif"
+  },
+  {
+    "id": "qwen2-1-text-to-image",
+    "name": "Qwen2 1 Text to Image",
+    "endpoint": "qwen2-1-text-to-image",
+    "family": "qwen2-1",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "The prompt that describes the image content, style and composition you want to generate. Any language is supported, up to 5000 characters.",
+        "examples": [
+          "A corgi wearing a yellow rain hat sitting on stone steps after the rain, shallow depth of field"
+        ]
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "The output aspect ratio. The actual pixel size also depends on resolution.",
+        "enum": [
+          "1:1",
+          "4:3",
+          "3:4",
+          "3:2",
+          "2:3",
+          "16:9",
+          "9:16",
+          "21:9",
+          "9:21"
+        ],
+        "default": "1:1"
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "The output resolution tier. 1K is the faster option; 2K produces four times the pixels and takes longer.",
+        "enum": [
+          "1K",
+          "2K"
+        ],
+        "default": "1K"
+      },
+      "background": {
+        "type": "string",
+        "title": "Background",
+        "name": "background",
+        "description": "Background type. Transparent outputs a PNG or WebP with a real alpha channel and cannot be used with JPEG.",
+        "enum": [
+          "opaque",
+          "transparent"
+        ],
+        "default": "opaque"
+      },
+      "output_format": {
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "description": "The output image format. jpeg has no alpha channel and cannot be combined with a transparent background.",
+        "enum": [
+          "png",
+          "webp",
+          "jpeg"
+        ],
+        "default": "png"
+      },
+      "enhance_prompt": {
+        "type": "boolean",
+        "title": "Enhance Prompt",
+        "name": "enhance_prompt",
+        "description": "Rewrites the prompt into a fuller scene description before generating, which noticeably improves quality.",
+        "default": true
+      },
+      "seed": {
+        "type": "integer",
+        "title": "Seed",
+        "name": "seed",
+        "description": "The random seed. Omit it to generate with a random seed."
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KIE_AI",
+    "description": "Qwen 2.1 Text to Image generates high-fidelity images from text prompts with intelligent prompt rewriting, transparent backgrounds, and up to 2K resolution.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_8.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_8.avif"
+  },
+  {
+    "id": "seedream-5.0-flash",
+    "name": "Seedream 5.0 Flash",
+    "endpoint": "seedream-5.0-flash",
+    "family": "seedream-5",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text prompt describing the image to generate",
+        "examples": [
+          "A full-process cafe design SaaS promotional image, clean isometric store layout with labeled zones, warm lighting, 16:9."
+        ]
+      },
+      "aspect_ratio": {
+        "enum": [
+          "1:1",
+          "16:9",
+          "9:16",
+          "4:3",
+          "3:4",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      },
+      "resolution": {
+        "enum": [
+          "1K",
+          "2K"
+        ],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "Output resolution: 1K (basic) or 2K (high).",
+        "default": "1K"
+      },
+      "output_format": {
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "title": "Output Format",
+        "name": "output_format",
+        "type": "string",
+        "description": "Format of the output image.",
+        "default": "png"
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KIE_AI",
+    "description": "Seedream 5.0 Flash is ByteDance's fast, low-cost Seedream 5 text-to-image tier, delivering photorealistic 1K and 2K images with strong prompt adherence and in-image text for high-volume creative workflows.",
+    "example_url": "https://cdn.muapi.ai/assets/2d089b7e-0bbd-43b1-87b0-1b25516d9c41.avif",
+    "image_url": "https://cdn.muapi.ai/assets/2d089b7e-0bbd-43b1-87b0-1b25516d9c41.avif"
   }
 ];
 
@@ -9340,6 +9637,491 @@ export const t2vModels = [
     },
     "provider": "google",
     "provider_name": "Google"
+  },
+  {
+    "id": "openai-sora-2-pro-storyboard",
+    "name": "OpenAI Sora 2 Pro Storyboard",
+    "endpoint": "openai-sora-2-pro-storyboard",
+    "family": "sora",
+    "imageField": "images_list",
+    "imageOptional": true,
+    "hasPrompt": false,
+    "inputs": {
+      "shots": {
+        "examples": [
+          {
+            "scene": "A quiet street at dawn, cobblestone path glistening from overnight rain, street lamps just going off, soft ambient light.",
+            "duration": 1.2
+          }
+        ],
+        "title": "Shots",
+        "name": "shots",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "scene": {
+              "type": "string",
+              "format": "text",
+              "title": "Scene",
+              "name": "scene",
+              "description": "Scene description/prompt."
+            },
+            "duration": {
+              "type": "number",
+              "name": "duration",
+              "title": "Duration",
+              "description": "Duration in seconds.",
+              "minValue": 0,
+              "maxValue": 10,
+              "step": 0.01,
+              "default": 1
+            }
+          }
+        },
+        "description": "Array of scene objects defining the storyboard sequence. Each scene contains a duration and description.",
+        "maxItems": 30
+      },
+      "duration": {
+        "enum": [
+          10,
+          15,
+          25
+        ],
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds",
+        "default": 10
+      },
+      "images_list": {
+        "examples": [],
+        "description": "Upload or provide image urls.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "9:16"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "KIE_AI",
+    "description": "Sora 2 Pro enables creators to structure video narratives by chaining multiple scenes through storyboard “cards.” Each card defines a segment of the video—setting, characters, actions, timing—and the model stitches them into a cohesive multi-scene video. This gives you more control over pacing, transitions, and storytelling flow.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sora-2-pro-i2v.mp4",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sora-2-pro-i2v.avif"
+  },
+  {
+    "id": "happy-horse-1-text-to-video",
+    "name": "Happy Horse 1 Text to Video",
+    "endpoint": "happy-horse-1-text-to-video",
+    "family": "happy-horse-1",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text description of the desired video content.",
+        "examples": [
+          "Inside a crowded airplane cabin, a horse wearing a pilot uniform suddenly realizes the plane is flying upside down. Passengers and luggage slam into the ceiling while drink carts roll wildly through the aisle. The horse panics and runs toward the cockpit as turbulence shakes the entire plane violently."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 3,
+        "maxValue": 15,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.0 Text to Video — generate expressive, stylized video clips from text prompts. Selectable output resolution (720p/1080p) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/dae1fa68-52a2-4627-8364-762202f8601b.avif",
+    "image_url": "https://cdn.muapi.ai/assets/dae1fa68-52a2-4627-8364-762202f8601b.avif"
+  },
+  {
+    "id": "happy-horse-1.1-text-to-video",
+    "name": "Happy Horse 1.1 Text to Video",
+    "endpoint": "happy-horse-1.1-text-to-video",
+    "family": "happy-horse-1.1",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text description of the desired video content.",
+        "examples": [
+          "A horse hosting a live cooking show confidently flips a pancake into the air, but the pancake catches fire and triggers a chain reaction of explosions throughout the kitchen."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 3,
+        "maxValue": 15,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.1 Text to Video — generate expressive video clips from text prompts with vivid character motion. Selectable output resolution (720p/1080p) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/860030ab-d3e8-41a7-8d2f-4e16308e0bc1.avif",
+    "image_url": "https://cdn.muapi.ai/assets/860030ab-d3e8-41a7-8d2f-4e16308e0bc1.avif"
+  },
+  {
+    "id": "minimax-h3-max-text-to-video",
+    "name": "MiniMax H3 Max Text to Video",
+    "endpoint": "minimax-h3-max-text-to-video",
+    "family": "minimax-h3-max",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe the video scene, action, camera movement, and style.",
+        "examples": [
+          "A cinematic tracking shot of a silver sports car driving through a rain-soaked city at night."
+        ]
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "16:9"
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "enum": [
+          "480p",
+          "768p",
+          "1080p"
+        ],
+        "default": "768p",
+        "description": "Output resolution. 1080p applies latent refinement from a 768p source."
+      },
+      "duration": {
+        "type": "integer",
+        "title": "Duration",
+        "name": "duration",
+        "enum": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "default": 5,
+        "description": "Output duration in seconds."
+      },
+      "prompt_expansion_mode": {
+        "type": "string",
+        "title": "Prompt Expansion Mode",
+        "name": "prompt_expansion_mode",
+        "enum": [
+          "disabled",
+          "balanced",
+          "quality"
+        ],
+        "default": "balanced",
+        "description": "Prompt rewriting effort. 'quality' can add up to ~30s of processing."
+      }
+    },
+    "provider": "minimax",
+    "provider_name": "MINIMAX",
+    "description": "MiniMax H3 Max Text to Video creates high-fidelity video up to 1080p from a written prompt through the Muapi API.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_28.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_28.avif"
+  },
+  {
+    "id": "minimax-h3-max-turbo-text-to-video",
+    "name": "MiniMax H3 Max Turbo Text to Video",
+    "endpoint": "minimax-h3-max-turbo-text-to-video",
+    "family": "minimax-h3-max",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe the video scene, action, camera movement, and style.",
+        "examples": [
+          "A cinematic tracking shot of a silver sports car driving through a rain-soaked city at night."
+        ]
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "16:9"
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "enum": [
+          "480p",
+          "768p",
+          "1080p"
+        ],
+        "default": "768p"
+      },
+      "duration": {
+        "type": "integer",
+        "title": "Duration",
+        "name": "duration",
+        "enum": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "default": 5,
+        "description": "Output duration in seconds."
+      },
+      "prompt_expansion_mode": {
+        "type": "string",
+        "title": "Prompt Expansion Mode",
+        "name": "prompt_expansion_mode",
+        "enum": [
+          "disabled",
+          "balanced",
+          "quality"
+        ],
+        "default": "balanced",
+        "description": "Prompt rewriting effort level."
+      }
+    },
+    "provider": "minimax",
+    "provider_name": "MINIMAX",
+    "description": "MiniMax H3 Max Turbo Text to Video is a faster, lower-cost H3 Max mode that creates video up to 1080p from a written prompt through the Muapi API.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_28.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_28.avif"
+  },
+  {
+    "id": "seedance-2-mini-spicy-omni-reference",
+    "name": "Seedance 2 Mini Spicy Omni Reference",
+    "endpoint": "seedance-2-mini-spicy-omni-reference",
+    "family": "seedance-2.0-mini",
+    "imageField": "images_list",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "The character walks forward confidently in a sunny meadow, camera follows from behind."
+        ],
+        "description": "Text prompt. Reference images with @image1..@image9, videos with @video1..@video3, audio with @audio1..@audio3.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v1.5-pro-i2v.jpg"
+        ],
+        "description": "Up to 9 reference images (JPEG/PNG/WebP). Referenced in prompt via @image1..@image9.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 9
+      },
+      "video_files": {
+        "examples": [
+          ""
+        ],
+        "description": "Up to 3 reference video clips (MP4, total max 15s). Referenced in prompt via @video1..@video3.",
+        "field": "videos_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Videos",
+        "name": "video_files",
+        "maxItems": 3
+      },
+      "audio_files": {
+        "examples": [
+          ""
+        ],
+        "description": "Up to 3 reference audio files (MP3/WAV, total max 15s). Referenced in prompt via @audio1..@audio3.",
+        "field": "audios_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Audio",
+        "name": "audio_files",
+        "maxItems": 3
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "3:4",
+          "4:3",
+          "21:9"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      },
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p"
+        ],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "Output video resolution.",
+        "default": "720p"
+      },
+      "duration": {
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 15,
+        "step": 1
+      },
+      "generate_audio": {
+        "type": "boolean",
+        "title": "Generate Audio",
+        "name": "generate_audio",
+        "description": "Whether to generate AI audio synchronized with the video.",
+        "default": true
+      },
+      "high_bitrate": {
+        "type": "boolean",
+        "title": "High Bitrate",
+        "name": "high_bitrate",
+        "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
+        "default": false
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KIE_AI",
+    "description": "Seedance 2 Mini Spicy Omni Reference generates video from a text prompt with optional image, video, and audio references. Cost-efficient mini-tier model for reference-driven workflows, with reduced content-safety filtering for more creative freedom.",
+    "example_url": "https://cdn.muapi.ai/assets/2d77df89-9492-4c7d-b434-7684d0ce3bb8.avif",
+    "image_url": "https://cdn.muapi.ai/assets/2d77df89-9492-4c7d-b434-7684d0ce3bb8.avif"
   }
 ];
 
@@ -12886,6 +13668,957 @@ export const i2iModels = [
     },
     "provider": "meta",
     "provider_name": "Meta"
+  },
+
+  {
+    "id": "gemini-omni-character",
+    "name": "Gemini Omni Character",
+    "endpoint": "gemini-omni-character",
+    "family": "gemini-omni",
+    "imageField": "images_list",
+    "hasPrompt": false,
+    "inputs": {
+      "descriptions": {
+        "type": "string",
+        "title": "Character Description",
+        "name": "descriptions",
+        "description": "Describe the character's appearance, identity, style, and personality.",
+        "examples": [
+          "A young woman with short silver hair, wearing a dark trench coat, confident and composed demeanor."
+        ]
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/712345784292/4a8c5c70-abcc-4920-873e-b0e219986453.jpg"
+        ],
+        "description": "Provide exactly 1 reference image of the character. Maximum 20 MB. Must be a publicly accessible URL.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Image",
+        "name": "images_list",
+        "maxItems": 1
+      },
+      "character_name": {
+        "type": "string",
+        "title": "Character Name",
+        "name": "character_name",
+        "description": "Optional display name for the character.",
+        "examples": [
+          "Aria"
+        ]
+      },
+      "audio_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Voice Profile IDs",
+        "name": "audio_ids",
+        "description": "Optional list of voice profile IDs from Gemini Omni Audio to associate with this character.",
+        "examples": [
+          "a8f1c2d3e4f5b6a7"
+        ]
+      }
+    },
+    "provider": "google",
+    "provider_name": "KIE_AI",
+    "description": "Generate a reusable character from a single reference image and a text description. Optionally attach a voice profile created with Gemini Omni Audio to give the character a consistent voice in future video generations.",
+    "example_url": "https://cdn.muapi.ai/assets/1df8a9c3-7c30-4fe7-bf2b-d89f2a5e40f1.avif",
+    "image_url": "https://cdn.muapi.ai/assets/1df8a9c3-7c30-4fe7-bf2b-d89f2a5e40f1.avif"
+  },
+  {
+    "id": "bytedance-seedream-5.0-pro-layer",
+    "name": "Bytedance Seedream 5.0 Pro Layer",
+    "endpoint": "bytedance-seedream-5.0-pro-layer",
+    "family": "seedream-5",
+    "imageField": "image_url",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Optional text description of layer decomposition rules or elements to extract.",
+        "examples": [
+          "Split the content in the image into 4 layers by combining text and subject elements."
+        ]
+      },
+      "image_url": {
+        "examples": [
+          "https://static.aiquickdraw.com/tools/example/1786019968051_cKRYLHHu.png"
+        ],
+        "description": "Upload or provide source image URL to decompose into separate layer components.",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "resolution": {
+        "enum": [
+          "auto",
+          "1K",
+          "1.5K",
+          "2K"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Target image resolution level.",
+        "default": "auto"
+      },
+      "output_format": {
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "description": "File format of generated image layers.",
+        "default": "png"
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KIE_AI",
+    "description": "Decompose complex images into clean, editable multi-layer assets with ByteDance Seedream 5 Pro Layer Decomposition.",
+    "example_url": "https://cdn.muapi.ai/assets/9c8cc044-ed81-4990-a437-e15405ab130c.avif",
+    "image_url": "https://cdn.muapi.ai/assets/9c8cc044-ed81-4990-a437-e15405ab130c.avif"
+  },
+  {
+    "id": "grok-imagine-image-2-edit",
+    "name": "Grok Imagine Image 2 Edit",
+    "endpoint": "grok-imagine-image-2-edit",
+    "family": "grok",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Change the subject's jacket to a teal windbreaker, keep everything else in the scene unchanged."
+        ],
+        "description": "Text prompt describing the desired edit. Max 5000 characters.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "request_id": {
+        "examples": [
+          "189245"
+        ],
+        "description": "The request_id returned by a prior grok-imagine-image-2 generation to edit.",
+        "type": "string",
+        "title": "Source Request ID",
+        "name": "request_id"
+      },
+      "mask_indexs": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        },
+        "title": "Mask Segment Indexes",
+        "name": "mask_indexs",
+        "description": "Optional index numbers of segments from the source image to restrict the edit to.",
+        "maxItems": 20
+      }
+    },
+    "provider": "grok",
+    "provider_name": "KIE_AI",
+    "description": "Grok Imagine Image 2.0 Edit applies a targeted, natural-language edit to a prior Grok Imagine Image 2.0 generation, changing only the described region while preserving the rest of the composition, style, and subject.",
+    "example_url": "https://cdn.muapi.ai/assets/8fed6c7f-cd7c-488a-94fe-2dad94efa448.avif",
+    "image_url": "https://cdn.muapi.ai/assets/8fed6c7f-cd7c-488a-94fe-2dad94efa448.avif"
+  },
+  {
+    "id": "gpt-image-2.5-flare-image-to-image",
+    "name": "GPT Image 2.5 Flare Image to Image",
+    "endpoint": "gpt-image-2.5-flare-image-to-image",
+    "family": "gpt-image-2.5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Change only the beverage bottle in the center to a matte black can labeled \"PEAK\", keeping the exact same lighting, shadows, reflective surface, background props, and camera angle. Do not change anything else in the scene."
+        ],
+        "description": "Text instructions describing the desired transformation. Maximum 20,000 characters.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/gpt-image-2-image-to-image-in.jpg"
+        ],
+        "description": "Upload or provide input images to transform. Up to 16 images supported.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 16
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "1:1",
+          "3:2",
+          "2:3",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "27:16",
+          "16:27",
+          "9:8",
+          "8:9"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output image aspect ratio. Note: images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; 1:1 cannot be converted to 4K — otherwise the task will fail to create.",
+        "default": "auto"
+      },
+      "resolution": {
+        "enum": [
+          "1K",
+          "2K",
+          "4K"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Image resolution. Note: images with a 1:1 aspect ratio cannot be converted to 4K. Images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; otherwise the task will fail to create.",
+        "default": "2K"
+      },
+      "quality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "type": "string",
+        "title": "Quality",
+        "name": "quality",
+        "description": "Output quality tier. \"high\" is rendered by the primary provider; \"low\", \"medium\", \"xhigh\", and \"max\" render on an alternate provider with a wider quality range.",
+        "default": "high"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "KIE_AI",
+    "description": "Transform and edit existing images using GPT-Image-2.5 Flare, OpenAI's default GPT Image 2.5 tier. Precision editing changes only what you ask for while preserving the rest of the scene, and multi-turn consistency keeps earlier edits intact across a chain of changes.",
+    "example_url": "https://cdn.muapi.ai/assets/dc2079a3-b9d9-4654-86d6-81974fa9d0f1.avif",
+    "image_url": "https://cdn.muapi.ai/assets/dc2079a3-b9d9-4654-86d6-81974fa9d0f1.avif"
+  },
+  {
+    "id": "gpt-image-2.5-sunburst-image-to-image",
+    "name": "GPT Image 2.5 Sunburst Image to Image",
+    "endpoint": "gpt-image-2.5-sunburst-image-to-image",
+    "family": "gpt-image-2.5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Change only the beverage bottle in the center to a matte black can labeled \"PEAK\", keeping the exact same lighting, shadows, reflective surface, background props, and camera angle. Do not change anything else in the scene."
+        ],
+        "description": "Text instructions describing the desired transformation. Maximum 20,000 characters.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/gpt-image-2-image-to-image-in.jpg"
+        ],
+        "description": "Upload or provide input images to transform. Up to 16 images supported.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 16
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "1:1",
+          "3:2",
+          "2:3",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "21:9",
+          "27:16",
+          "16:27",
+          "9:8",
+          "8:9"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output image aspect ratio. Note: images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; 1:1 cannot be converted to 4K — otherwise the task will fail to create.",
+        "default": "auto"
+      },
+      "resolution": {
+        "enum": [
+          "1K",
+          "2K",
+          "4K"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Image resolution. Note: images with a 1:1 aspect ratio cannot be converted to 4K. Images with aspect ratio 'auto' (or unspecified) will only be converted to 1K; otherwise the task will fail to create.",
+        "default": "2K"
+      },
+      "quality": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "type": "string",
+        "title": "Quality",
+        "name": "quality",
+        "description": "Output quality tier. \"high\" is rendered by the primary provider; \"low\", \"medium\", \"xhigh\", and \"max\" render on an alternate provider with a wider quality range.",
+        "default": "high"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "KIE_AI",
+    "description": "Transform and edit existing images using GPT-Image-2.5 Sunburst, OpenAI's slower, higher-precision GPT Image 2.5 tier, tuned for maximum edit precision on a single critical edit.",
+    "example_url": "https://cdn.muapi.ai/assets/17776e8a-5679-4c77-9db6-f24025642bdf.avif",
+    "image_url": "https://cdn.muapi.ai/assets/17776e8a-5679-4c77-9db6-f24025642bdf.avif"
+  },
+  {
+    "id": "topaz-upscale-image-creative",
+    "name": "Topaz Upscale Image Creative",
+    "endpoint": "topaz-upscale-image-creative",
+    "family": "topaz-2-image-creative",
+    "imageField": "image_url",
+    "hasPrompt": false,
+    "inputs": {
+      "image_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler-in.jpg"
+        ],
+        "description": "Input image to upscale.",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "model": {
+        "description": "Topaz creative upscale model variant.",
+        "type": "string",
+        "title": "Model",
+        "name": "model",
+        "enum": [
+          "Bloom 2",
+          "Bloom",
+          "Bloom Realism"
+        ],
+        "default": "Bloom 2"
+      },
+      "upscale_factor": {
+        "description": "Factor to upscale the image by.",
+        "type": "number",
+        "title": "Upscale Factor",
+        "name": "upscale_factor",
+        "default": 2
+      },
+      "autoprompt": {
+        "description": "Automatically generate a creative-detail prompt.",
+        "type": "boolean",
+        "title": "Autoprompt",
+        "name": "autoprompt"
+      },
+      "creativity": {
+        "description": "Creative detail strength (1-9).",
+        "type": "int",
+        "title": "Creativity",
+        "name": "creativity",
+        "minValue": 1,
+        "maxValue": 9,
+        "step": 1
+      },
+      "color_preservation": {
+        "description": "Preserve original color palette.",
+        "type": "boolean",
+        "title": "Color Preservation",
+        "name": "color_preservation"
+      },
+      "crop_to_fill": {
+        "description": "Crop the output to exactly fill the target aspect ratio.",
+        "type": "boolean",
+        "title": "Crop To Fill",
+        "name": "crop_to_fill",
+        "default": false
+      },
+      "output_format": {
+        "description": "Output image file format.",
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "enum": [
+          "jpeg",
+          "png"
+        ],
+        "default": "jpeg"
+      }
+    },
+    "provider": "topaz",
+    "provider_name": "FAL_AI",
+    "description": "Upscale an image with Topaz's creative/generative-detail model, adding plausible new fine detail while enlarging up to 4x.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler.jpg",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler.jpg"
+  },
+  {
+    "id": "topaz-upscale-image-generative",
+    "name": "Topaz Upscale Image Generative",
+    "endpoint": "topaz-upscale-image-generative",
+    "family": "topaz-2-image-generative",
+    "imageField": "image_url",
+    "hasPrompt": true,
+    "promptRequired": false,
+    "inputs": {
+      "image_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler-in.jpg"
+        ],
+        "description": "Input image to upscale.",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "model": {
+        "description": "Topaz generative upscale model variant.",
+        "type": "string",
+        "title": "Model",
+        "name": "model",
+        "enum": [
+          "Wonder 3.5",
+          "Wonder 3",
+          "Wonder 2",
+          "Wonder",
+          "Recover 3",
+          "Standard MAX",
+          "Redefine",
+          "Recovery V2",
+          "Recovery"
+        ],
+        "default": "Wonder 3"
+      },
+      "upscale_factor": {
+        "description": "Factor to upscale the image by.",
+        "type": "number",
+        "title": "Upscale Factor",
+        "name": "upscale_factor",
+        "default": 2
+      },
+      "crop_to_fill": {
+        "description": "Crop the output to exactly fill the target aspect ratio.",
+        "type": "boolean",
+        "title": "Crop To Fill",
+        "name": "crop_to_fill",
+        "default": false
+      },
+      "output_format": {
+        "description": "Output image file format.",
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "enum": [
+          "jpeg",
+          "png"
+        ],
+        "default": "jpeg"
+      },
+      "subject_detection": {
+        "description": "Which region of the image to prioritize enhancement on.",
+        "type": "string",
+        "title": "Subject Detection",
+        "name": "subject_detection",
+        "enum": [
+          "All",
+          "Foreground",
+          "Background"
+        ],
+        "default": "All"
+      },
+      "face_enhancement": {
+        "description": "Enable dedicated face enhancement.",
+        "type": "boolean",
+        "title": "Face Enhancement",
+        "name": "face_enhancement",
+        "default": true
+      },
+      "face_enhancement_strength": {
+        "description": "Strength of face enhancement.",
+        "type": "number",
+        "title": "Face Enhancement Strength",
+        "name": "face_enhancement_strength",
+        "default": 0.8
+      },
+      "face_enhancement_creativity": {
+        "description": "Creativity applied to face enhancement.",
+        "type": "number",
+        "title": "Face Enhancement Creativity",
+        "name": "face_enhancement_creativity",
+        "default": 0
+      },
+      "enhancement_strength": {
+        "description": "Overall enhancement strength tier.",
+        "type": "string",
+        "title": "Enhancement Strength",
+        "name": "enhancement_strength",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "creativity": {
+        "description": "Creative detail strength (1-6).",
+        "type": "int",
+        "title": "Creativity",
+        "name": "creativity",
+        "minValue": 1,
+        "maxValue": 6,
+        "step": 1
+      },
+      "texture": {
+        "description": "Texture detail strength (1-5).",
+        "type": "int",
+        "title": "Texture",
+        "name": "texture",
+        "minValue": 1,
+        "maxValue": 5,
+        "step": 1
+      },
+      "prompt": {
+        "description": "Optional text prompt to guide generative detail.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "autoprompt": {
+        "description": "Automatically generate a guiding prompt.",
+        "type": "boolean",
+        "title": "Autoprompt",
+        "name": "autoprompt"
+      },
+      "sharpen": {
+        "description": "Sharpening amount (0-1).",
+        "type": "number",
+        "title": "Sharpen",
+        "name": "sharpen"
+      },
+      "denoise": {
+        "description": "Denoising amount (0-1).",
+        "type": "number",
+        "title": "Denoise",
+        "name": "denoise"
+      },
+      "detail": {
+        "description": "Fine-detail amount (0-1).",
+        "type": "number",
+        "title": "Detail",
+        "name": "detail"
+      }
+    },
+    "provider": "topaz",
+    "provider_name": "FAL_AI",
+    "description": "Upscale an image with Topaz's Wonder/Recover generative models, reconstructing realistic fine detail, textures, and faces at high resolution.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler.jpg",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler.jpg"
+  },
+  {
+    "id": "topaz-upscale-image-precision",
+    "name": "Topaz Upscale Image Precision",
+    "endpoint": "topaz-upscale-image-precision",
+    "family": "topaz-2-image-precision",
+    "imageField": "image_url",
+    "hasPrompt": false,
+    "inputs": {
+      "image_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler-in.jpg"
+        ],
+        "description": "Input image to upscale.",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "model": {
+        "description": "Topaz precision upscale model variant.",
+        "type": "string",
+        "title": "Model",
+        "name": "model",
+        "enum": [
+          "Standard V2",
+          "High Fidelity V3",
+          "High Fidelity V2",
+          "Low Resolution V2",
+          "CGI",
+          "Text Refine",
+          "Faces"
+        ],
+        "default": "Standard V2"
+      },
+      "upscale_factor": {
+        "description": "Factor to upscale the image by.",
+        "type": "number",
+        "title": "Upscale Factor",
+        "name": "upscale_factor",
+        "default": 2
+      },
+      "output_format": {
+        "description": "Output image file format.",
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "enum": [
+          "jpeg",
+          "png"
+        ],
+        "default": "jpeg"
+      },
+      "crop_to_fill": {
+        "description": "Crop the output to exactly fill the target aspect ratio.",
+        "type": "boolean",
+        "title": "Crop To Fill",
+        "name": "crop_to_fill",
+        "default": false
+      },
+      "subject_detection": {
+        "description": "Which region of the image to prioritize enhancement on.",
+        "type": "string",
+        "title": "Subject Detection",
+        "name": "subject_detection",
+        "enum": [
+          "All",
+          "Foreground",
+          "Background"
+        ],
+        "default": "All"
+      },
+      "face_enhancement": {
+        "description": "Enable dedicated face enhancement.",
+        "type": "boolean",
+        "title": "Face Enhancement",
+        "name": "face_enhancement",
+        "default": true
+      },
+      "face_enhancement_creativity": {
+        "description": "Creativity applied to face enhancement.",
+        "type": "number",
+        "title": "Face Enhancement Creativity",
+        "name": "face_enhancement_creativity",
+        "default": 0
+      },
+      "face_enhancement_strength": {
+        "description": "Strength of face enhancement.",
+        "type": "number",
+        "title": "Face Enhancement Strength",
+        "name": "face_enhancement_strength",
+        "default": 0.8
+      },
+      "sharpen": {
+        "description": "Sharpening amount (0-1).",
+        "type": "number",
+        "title": "Sharpen",
+        "name": "sharpen"
+      },
+      "denoise": {
+        "description": "Denoising amount (0-1).",
+        "type": "number",
+        "title": "Denoise",
+        "name": "denoise"
+      },
+      "fix_compression": {
+        "description": "Reduce compression artifacts (0-1).",
+        "type": "number",
+        "title": "Fix Compression",
+        "name": "fix_compression"
+      },
+      "strength": {
+        "description": "Overall enhancement strength (0.01-1).",
+        "type": "number",
+        "title": "Strength",
+        "name": "strength"
+      }
+    },
+    "provider": "topaz",
+    "provider_name": "FAL_AI",
+    "description": "Upscale an image faithfully with Topaz's precision models (Standard/High Fidelity/CGI/Text Refine/Faces), preserving the original look while sharpening fine detail.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler.jpg",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/imagemodels/topaz-upscaler.jpg"
+  },
+  {
+    "id": "qwen2-1-image-to-image",
+    "name": "Qwen2 1 Image to Image",
+    "endpoint": "qwen2-1-image-to-image",
+    "family": "qwen2-1",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "The prompt describing the result you want. When mask_url is supplied, describe what should be generated inside the white area of the mask.",
+        "examples": [
+          "Replace the backpack in the first image with the colour scheme from the second image, and leave everything else unchanged"
+        ]
+      },
+      "images_list": {
+        "description": "Reference images, given as an array of 1 to 10 URLs. Order matters when the prompt refers to 'the first image', 'the second image'.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Input Images",
+        "name": "images_list",
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/712345784292/4a8c5c70-abcc-4920-873e-b0e219986453.jpg"
+        ],
+        "maxItems": 10
+      },
+      "mask_url": {
+        "type": "string",
+        "title": "Mask URL",
+        "name": "mask_url",
+        "description": "Inpainting mask (white = area to change, black = kept unchanged) that switches the request into local-edit mode. Must be used with exactly one reference image."
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output aspect ratio. Defaults to the first reference image's ratio. Ignored in local-edit mode.",
+        "enum": [
+          "auto",
+          "1:1",
+          "4:3",
+          "3:4",
+          "3:2",
+          "2:3",
+          "16:9",
+          "9:16",
+          "21:9",
+          "9:21"
+        ],
+        "default": "auto"
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution tier. 1K is the faster option; 2K produces four times the pixels and takes longer.",
+        "enum": [
+          "1K",
+          "2K"
+        ],
+        "default": "1K"
+      },
+      "background": {
+        "type": "string",
+        "title": "Background",
+        "name": "background",
+        "description": "Background type. Transparent outputs a PNG or WebP with a real alpha channel and cannot be used with JPEG.",
+        "enum": [
+          "opaque",
+          "transparent"
+        ],
+        "default": "opaque"
+      },
+      "output_format": {
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "description": "Output image format. jpeg has no alpha channel and cannot be combined with a transparent background.",
+        "enum": [
+          "png",
+          "webp",
+          "jpeg"
+        ],
+        "default": "png"
+      },
+      "enhance_prompt": {
+        "type": "boolean",
+        "title": "Enhance Prompt",
+        "name": "enhance_prompt",
+        "description": "Rewrites the prompt into a fuller scene description before generating, which noticeably improves quality. Ignored in local-edit mode.",
+        "default": true
+      },
+      "seed": {
+        "type": "integer",
+        "title": "Seed",
+        "name": "seed",
+        "description": "The random seed. Omit it to generate with a random seed."
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KIE_AI",
+    "description": "Qwen 2.1 Image to Image edits and recombines up to 10 reference images from a text prompt, with an optional inpainting mask for precise local edits.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_7.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_7.avif"
+  },
+  {
+    "id": "seedream-5.0-flash-edit",
+    "name": "Seedream 5.0 Flash Edit",
+    "endpoint": "seedream-5.0-flash-edit",
+    "family": "seedream-5",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text prompt describing the desired modification",
+        "examples": [
+          "Keep the model's pose and the flowing shape of the liquid dress unchanged. Change the clothing material from silver metal to completely transparent clear water. Lighting changes from reflection to refraction."
+        ]
+      },
+      "images_list": {
+        "examples": [
+          "https://static.aiquickdraw.com/tools/example/1764851484363_ScV1s2aq.webp"
+        ],
+        "description": "Upload or provide up to 10 reference images (JPEG, PNG, WebP; max 30MB each).",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 10
+      },
+      "aspect_ratio": {
+        "enum": [
+          "1:1",
+          "16:9",
+          "9:16",
+          "4:3",
+          "3:4",
+          "2:3",
+          "3:2",
+          "21:9"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      },
+      "resolution": {
+        "enum": [
+          "1K",
+          "2K"
+        ],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "Output resolution: 1K (basic) or 2K (high).",
+        "default": "1K"
+      },
+      "output_format": {
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "title": "Output Format",
+        "name": "output_format",
+        "type": "string",
+        "description": "Format of the output image.",
+        "default": "png"
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KIE_AI",
+    "description": "Seedream 5.0 Flash Edit is ByteDance's fast, low-cost image-to-image tier, editing or combining up to 10 reference images from a text instruction at 1K or 2K.",
+    "example_url": "https://cdn.muapi.ai/assets/fb9474e2-d72d-4179-b769-5c516622e245.avif",
+    "image_url": "https://cdn.muapi.ai/assets/fb9474e2-d72d-4179-b769-5c516622e245.avif"
+  },
+  {
+    "id": "seedream-5.0-flash-layerize",
+    "name": "Seedream 5.0 Flash Layerize",
+    "endpoint": "seedream-5.0-flash-layerize",
+    "family": "seedream-5",
+    "imageField": "image_url",
+    "hasPrompt": true,
+    "promptRequired": false,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Optional. Describe which elements to separate; supports <bbox>x1 y1 x2 y2</bbox> (0-1000 normalized). Leave empty to auto-detect main elements.",
+        "examples": [
+          "Separate the title text <bbox>179 58 809 197</bbox> and the parrot <bbox>330 274 641 991</bbox> into independent layers"
+        ]
+      },
+      "image_url": {
+        "examples": [
+          "https://static.aiquickdraw.com/tools/example/1786019968051_cKRYLHHu.png"
+        ],
+        "description": "Source image to decompose (exactly 1; PNG, JPEG, WebP, BMP, TIFF, GIF; max 30MB).",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "resolution": {
+        "enum": [
+          "auto",
+          "1K",
+          "1.5K",
+          "2K"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Target image resolution level.",
+        "default": "auto"
+      },
+      "output_format": {
+        "enum": [
+          "png",
+          "jpeg"
+        ],
+        "type": "string",
+        "title": "Output Format",
+        "name": "output_format",
+        "description": "Format of the base image only; separated layers are always PNG.",
+        "default": "jpeg"
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KIE_AI",
+    "description": "Decompose a composite image into a base image plus clean, separate layer assets with Seedream 5.0 Flash Layer Decomposition. Optionally target elements with prompts or <bbox> regions.",
+    "example_url": "https://cdn.muapi.ai/assets/9c8cc044-ed81-4990-a437-e15405ab130c.avif",
+    "image_url": "https://cdn.muapi.ai/assets/9c8cc044-ed81-4990-a437-e15405ab130c.avif"
   }
 ];
 
@@ -24532,6 +26265,831 @@ export const i2vModels = [
     },
     "provider": "minimax",
     "provider_name": "Minimax"
+  },
+  {
+    "id": "happy-horse-1-image-to-video",
+    "name": "Happy Horse 1 Image to Video",
+    "endpoint": "happy-horse-1-image-to-video",
+    "family": "happy-horse-1",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Optional text description guiding the motion.",
+        "examples": [
+          "The motorcycle suddenly accelerates uncontrollably through traffic while the horse struggles to stay balanced. Cars swerve out of the way, sparks scrape across the road during sharp turns, and the camera tracks inches away from the speeding bike."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-image-to-video-720p.jpg"
+        ],
+        "description": "Upload or provide the image to animate.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image",
+        "name": "images_list",
+        "maxItems": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 3,
+        "maxValue": 15,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.0 Image to Video — bring still images to life with fluid, expressive animation. Selectable output resolution (720p/1080p) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/f4310d95-79d1-4b55-ac05-17d13971f056.avif",
+    "image_url": "https://cdn.muapi.ai/assets/f4310d95-79d1-4b55-ac05-17d13971f056.avif"
+  },
+  {
+    "id": "happy-horse-1-reference-to-video",
+    "name": "Happy Horse 1 Reference to Video",
+    "endpoint": "happy-horse-1-reference-to-video",
+    "family": "happy-horse-1",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text description of the desired video. Up to 5,000 non-Chinese (or 2,500 Chinese) characters.",
+        "examples": [
+          "Use @image1 riding inside @image2 at extreme speed through a massive supermarket. The rocket cart blasts through aisles, launches over checkout counters, and sends products exploding everywhere while the camera chases closely behind through the chaos."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-reference-to-video-720p-1.jpg",
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-reference-to-video-720p-2.jpg"
+        ],
+        "description": "1-9 reference image URLs. JPEG/PNG/WEBP, >=400px shortest side, <=10 MB each.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 9
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 3,
+        "maxValue": 15,
+        "step": 1
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Optional random seed for reproducibility (0-2147483647).",
+        "default": 0,
+        "minValue": 0,
+        "maxValue": 2147483647,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.0 Reference to Video - generate expressive video clips conditioned on 1-9 reference images plus a text prompt. Selectable output resolution (720p/1080p) - price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/0c9eb59d-a77d-42ac-b62a-8a3b2151bb1d.avif",
+    "image_url": "https://cdn.muapi.ai/assets/0c9eb59d-a77d-42ac-b62a-8a3b2151bb1d.avif"
+  },
+  {
+    "id": "happy-horse-1.1-image-to-video",
+    "name": "Happy Horse 1.1 Image to Video",
+    "endpoint": "happy-horse-1.1-image-to-video",
+    "family": "happy-horse-1.1",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": false,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Optional text description guiding the motion.",
+        "examples": [
+          "A tiny horse wearing boxing gloves stands in front of a massive battle robot. The horse suddenly charges fearlessly and punches the robot so hard that cars flip over."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-image-to-video-1080p.jpg"
+        ],
+        "description": "Upload or provide the image to animate.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image",
+        "name": "images_list",
+        "maxItems": 1
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 3,
+        "maxValue": 15,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.1 Image to Video — bring still images to life with fluid, expressive animation. Selectable output resolution (720p/1080p) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/7135055f-1ea3-47fb-addc-781187b37eca.avif",
+    "image_url": "https://cdn.muapi.ai/assets/7135055f-1ea3-47fb-addc-781187b37eca.avif"
+  },
+  {
+    "id": "happy-horse-1.1-reference-to-video",
+    "name": "Happy Horse 1.1 Reference to Video",
+    "endpoint": "happy-horse-1.1-reference-to-video",
+    "family": "happy-horse-1.1",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text description of the desired video. Up to 5,000 characters.",
+        "examples": [
+          "Place @image1 inside @image2 running across countertops while giant cooking disasters happen everywhere. Exploding soup pots, flying vegetables, and fire bursts create chaos."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-reference-to-video-1080p-1.jpg",
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-reference-to-video-1080p-2.jpg"
+        ],
+        "description": "1-9 reference image URLs. JPEG/PNG/WEBP, >=400px shortest side, <=10 MB each.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 9
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 3,
+        "maxValue": 15,
+        "step": 1
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Optional random seed for reproducibility (0-2147483647).",
+        "default": 0,
+        "minValue": 0,
+        "maxValue": 2147483647,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.1 Reference to Video — generate video conditioned on 1-9 reference images plus a text prompt. Selectable output resolution (720p/1080p) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/27cdc430-3695-43f1-952a-4fe968d88862.avif",
+    "image_url": "https://cdn.muapi.ai/assets/27cdc430-3695-43f1-952a-4fe968d88862.avif"
+  },
+  {
+    "id": "minimax-h3-max-image-to-video",
+    "name": "MiniMax H3 Max Image to Video",
+    "endpoint": "minimax-h3-max-image-to-video",
+    "family": "minimax-h3-max",
+    "imageField": "image_url",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe the motion, action, and camera movement.",
+        "examples": [
+          "The camera slowly pushes in as the subject turns toward the light and fabric moves in a soft breeze."
+        ]
+      },
+      "image_url": {
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url",
+        "description": "Starting frame image. The output canvas follows this image.",
+        "field": "image",
+        "examples": []
+      },
+      "end_image_url": {
+        "type": "string",
+        "title": "End Image URL",
+        "name": "end_image_url",
+        "description": "Optional final frame image. Can be used alone for end-keyframe generation.",
+        "field": "image",
+        "examples": []
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "enum": [
+          "480p",
+          "768p",
+          "1080p"
+        ],
+        "default": "768p"
+      },
+      "duration": {
+        "type": "integer",
+        "title": "Duration",
+        "name": "duration",
+        "enum": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "default": 5,
+        "description": "Output duration in seconds."
+      },
+      "prompt_expansion_mode": {
+        "type": "string",
+        "title": "Prompt Expansion Mode",
+        "name": "prompt_expansion_mode",
+        "enum": [
+          "disabled",
+          "balanced",
+          "quality"
+        ],
+        "default": "balanced",
+        "description": "Prompt rewriting effort. 'quality' can add up to ~30s of processing."
+      }
+    },
+    "provider": "minimax",
+    "provider_name": "MINIMAX",
+    "description": "MiniMax H3 Max Image to Video animates a source image with a motion prompt at up to 1080p through the Muapi API.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_27.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_27.avif"
+  },
+  {
+    "id": "minimax-h3-max-reference-to-video",
+    "name": "MiniMax H3 Max Reference to Video",
+    "endpoint": "minimax-h3-max-reference-to-video",
+    "family": "minimax-h3-max",
+    "imageField": "reference_images",
+    "videoField": "reference_videos",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe the video scene and how the references should be used (e.g. 'Image 1', 'Video 1').",
+        "examples": [
+          "Use the references to create a cinematic product reveal with a slow camera orbit."
+        ]
+      },
+      "reference_images": {
+        "type": "array",
+        "title": "Reference Images",
+        "name": "reference_images",
+        "description": "Reference image URLs (up to 9). Provide at least one image or video reference. Max 12 combined reference files.",
+        "maxItems": 9,
+        "field": "images_list",
+        "items": {
+          "type": "string"
+        },
+        "examples": []
+      },
+      "reference_videos": {
+        "type": "array",
+        "title": "Reference Videos",
+        "name": "reference_videos",
+        "description": "Reference video URLs (up to 3; 2-15s each, 15s combined max). Provide at least one image or video reference.",
+        "maxItems": 3,
+        "field": "videos_list",
+        "items": {
+          "type": "string"
+        },
+        "examples": []
+      },
+      "reference_audios": {
+        "type": "array",
+        "title": "Reference Audio",
+        "name": "reference_audios",
+        "description": "Optional reference audio URLs (up to 3; 2-15s each, 15s combined max). Audio cannot be used alone.",
+        "maxItems": 3,
+        "field": "audios_list",
+        "items": {
+          "type": "string"
+        },
+        "examples": []
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "enum": [
+          "adaptive",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "adaptive"
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "enum": [
+          "480p",
+          "768p",
+          "1080p"
+        ],
+        "default": "768p"
+      },
+      "duration": {
+        "type": "integer",
+        "title": "Duration",
+        "name": "duration",
+        "enum": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "default": 5,
+        "description": "Output duration in seconds."
+      },
+      "prompt_expansion_mode": {
+        "type": "string",
+        "title": "Prompt Expansion Mode",
+        "name": "prompt_expansion_mode",
+        "enum": [
+          "disabled",
+          "balanced",
+          "quality"
+        ],
+        "default": "balanced",
+        "description": "Prompt rewriting effort. 'quality' can add up to ~30s of processing."
+      }
+    },
+    "provider": "minimax",
+    "provider_name": "MINIMAX",
+    "description": "MiniMax H3 Max Reference to Video creates high-fidelity video from a prompt plus image, video, and optional audio references through the Muapi API.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_26.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_26.avif"
+  },
+  {
+    "id": "minimax-h3-max-turbo-image-to-video",
+    "name": "MiniMax H3 Max Turbo Image to Video",
+    "endpoint": "minimax-h3-max-turbo-image-to-video",
+    "family": "minimax-h3-max",
+    "imageField": "image_url",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe the motion, action, and camera movement.",
+        "examples": [
+          "The camera slowly pushes in as the subject turns toward the light and fabric moves in a soft breeze."
+        ]
+      },
+      "image_url": {
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url",
+        "description": "Starting frame image. The output canvas follows this image.",
+        "field": "image",
+        "examples": []
+      },
+      "end_image_url": {
+        "type": "string",
+        "title": "End Image URL",
+        "name": "end_image_url",
+        "description": "Optional final frame image. Can be used alone for end-keyframe generation.",
+        "field": "image",
+        "examples": []
+      },
+      "resolution": {
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "enum": [
+          "480p",
+          "768p",
+          "1080p"
+        ],
+        "default": "768p"
+      },
+      "duration": {
+        "type": "integer",
+        "title": "Duration",
+        "name": "duration",
+        "enum": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "default": 5,
+        "description": "Output duration in seconds."
+      },
+      "prompt_expansion_mode": {
+        "type": "string",
+        "title": "Prompt Expansion Mode",
+        "name": "prompt_expansion_mode",
+        "enum": [
+          "disabled",
+          "balanced",
+          "quality"
+        ],
+        "default": "balanced",
+        "description": "Prompt rewriting effort level."
+      }
+    },
+    "provider": "minimax",
+    "provider_name": "MINIMAX",
+    "description": "MiniMax H3 Max Turbo Image to Video is a faster, lower-cost H3 Max mode that animates a source image at up to 1080p through the Muapi API.",
+    "example_url": "https://cdn.muapi.ai/assets/image_download_27.avif",
+    "image_url": "https://cdn.muapi.ai/assets/image_download_27.avif"
+  },
+  {
+    "id": "seedance-2-spicy-omni-reference",
+    "name": "Seedance 2 Spicy Omni Reference",
+    "endpoint": "seedance-2-spicy-omni-reference",
+    "family": "sd-2",
+    "imageField": "images_list",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Video description. Use @image1…@image9 to reference images, @video1…@video3 for videos, and @audio1…@audio3 for audio. Use @character:<request_id> for a Seedance 2 character sheet or @omni-character:<char_id> for a trained omni-character. Multiple characters are supported.",
+        "examples": [
+          "@image1 is the main character. The person walks along a city street at sunset, cinematic lighting."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheapest, 4K is most expensive.",
+        "default": "720p"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/712345784292/4a8c5c70-abcc-4920-873e-b0e219986453.jpg"
+        ],
+        "description": "Up to 9 reference image URLs (JPEG/PNG/WebP). Each Nth image corresponds to @imageN in the prompt.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 9
+      },
+      "video_files": {
+        "examples": [],
+        "description": "Up to 3 reference video clip URLs (MP4, max 15s each). Each Nth video corresponds to @videoN in the prompt.",
+        "field": "videos_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Video Reference URLs",
+        "name": "video_files",
+        "maxItems": 3
+      },
+      "audio_files": {
+        "examples": [],
+        "description": "Up to 3 reference audio files (MP3/WAV, total max 15s). Each Nth audio corresponds to @audioN in the prompt.",
+        "field": "audios_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Audio Reference URLs",
+        "name": "audio_files",
+        "maxItems": 3
+      },
+      "aspect_ratio": {
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 15,
+        "step": 1
+      },
+      "high_bitrate": {
+        "type": "boolean",
+        "title": "High Bitrate",
+        "name": "high_bitrate",
+        "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
+        "default": false
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KINOVI",
+    "description": "Seedance 2 Spicy Omni Reference by ByteDance. Same VIP-tier priority routing as Seedance 2 VIP Omni Reference, generating videos from up to 9 image references, 3 video clips, and 3 audio references, with reduced content-safety filtering for more creative freedom. Reference materials in your prompt with @image1…@image9, @video1…@video3, and @audio1…@audio3. Selectable output resolution (720p/1080p/4K) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/75c82e2e-3772-4289-9f7b-2cb794643bea.avif",
+    "image_url": "https://cdn.muapi.ai/assets/75c82e2e-3772-4289-9f7b-2cb794643bea.avif"
+  },
+  {
+    "id": "seedance-2-spicy-omni-reference-fast",
+    "name": "Seedance 2 Spicy Omni Reference Fast",
+    "endpoint": "seedance-2-spicy-omni-reference-fast",
+    "family": "sd-2",
+    "imageField": "images_list",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Video description. Use @image1…@image9 to reference images, @video1…@video3 for videos, and @audio1…@audio3 for audio. Use @character:<request_id> for a Seedance 2 character sheet or @omni-character:<char_id> for a trained omni-character. Multiple characters are supported.",
+        "examples": [
+          "@image1 is the main character. The person walks along a city street at sunset, cinematic lighting."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheapest, 4K is most expensive.",
+        "default": "720p"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/712345784292/4a8c5c70-abcc-4920-873e-b0e219986453.jpg"
+        ],
+        "description": "Up to 9 reference image URLs (JPEG/PNG/WebP). Each Nth image corresponds to @imageN in the prompt.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 9
+      },
+      "video_files": {
+        "examples": [],
+        "description": "Up to 3 reference video clip URLs (MP4, max 15s each). Each Nth video corresponds to @videoN in the prompt.",
+        "field": "videos_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Video Reference URLs",
+        "name": "video_files",
+        "maxItems": 3
+      },
+      "audio_files": {
+        "examples": [],
+        "description": "Up to 3 reference audio files (MP3/WAV, total max 15s). Each Nth audio corresponds to @audioN in the prompt.",
+        "field": "audios_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Audio Reference URLs",
+        "name": "audio_files",
+        "maxItems": 3
+      },
+      "aspect_ratio": {
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "type": "string",
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "description": "Output video aspect ratio.",
+        "default": "16:9"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Video duration in seconds.",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 15,
+        "step": 1
+      },
+      "high_bitrate": {
+        "type": "boolean",
+        "title": "High Bitrate",
+        "name": "high_bitrate",
+        "description": "Enable high bitrate mode for better visual fidelity. Produces larger files.",
+        "default": false
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "KINOVI",
+    "description": "Seedance 2 Spicy Omni Reference Fast by ByteDance. Faster video generation using up to 9 image references, up to 3 video clips, and up to 3 audio references with priority routing, and reduced content-safety filtering for more creative freedom. Reference materials in your prompt with @image1…@image9, @video1…@video3, and @audio1…@audio3. Selectable output resolution (720p/1080p/4K) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/75c82e2e-3772-4289-9f7b-2cb794643bea.avif",
+    "image_url": "https://cdn.muapi.ai/assets/75c82e2e-3772-4289-9f7b-2cb794643bea.avif"
   }
 ];
 
@@ -27931,6 +30489,653 @@ export const v2vModels = [
     "description": "Extract a per-frame depth map from a video or image using Depth Anything V2, for use as a motion/structure control signal in AI video generation.",
     "provider": "video",
     "provider_name": "Video"
+  },
+  {
+    "id": "runway-act-two-v2v",
+    "name": "Runway Act Two V2V",
+    "endpoint": "runway-act-two-v2v",
+    "family": "runway",
+    "videoField": "video_url",
+    "hasPrompt": false,
+    "inputs": {
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/videos/186/949545949165/ae612a72-578f-4eb2-a33c-9deea0017b28.mp4"
+        ],
+        "description": "URL of the input video. An video of your character. In the output, the character will use the reference video performance in its original static environment.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "reference_video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/videos/186/703170005884/a024ec71-10b5-4d41-ab84-2055fb3f14b3.mp4"
+        ],
+        "description": "A video URL pointing to a video of a person performing in the manner that you would like your character to perform.",
+        "field": "video",
+        "type": "string",
+        "title": "Reference Video URL",
+        "name": "reference_video_url"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output video.",
+        "default": "16:9"
+      }
+    },
+    "provider": "runway",
+    "description": "Take an existing character video and sync it with the motion from a reference video. This lets you update facial expressions, head turns, and speech gestures while keeping the original look and style. It’s perfect for reshooting performances, dubbing, or animating characters without re-rendering visuals.",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/muapi/homepage/runway-act-two-v2v.avif"
+  },
+  {
+    "id": "luma-flash-reframe",
+    "name": "Luma Flash Reframe",
+    "endpoint": "luma-flash-reframe",
+    "family": "luma",
+    "imageField": "image_url",
+    "videoField": "video_url",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": false,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          ""
+        ],
+        "description": "Optional prompt for reframing.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/videos/186/251774920487/6cc08197-125a-42f4-96cc-9c2440f69c18.mp4"
+        ],
+        "description": "URL of the input video to reframe.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      },
+      "image_url": {
+        "examples": [
+          null
+        ],
+        "description": "Optional URL of the first frame image for reframing.",
+        "field": "image",
+        "type": "string",
+        "title": "Image URL",
+        "name": "image_url"
+      },
+      "duration": {
+        "enum": [
+          5,
+          8,
+          10
+        ],
+        "title": "Duration",
+        "name": "duration",
+        "type": "int",
+        "description": "The duration of the generated video in seconds.",
+        "default": 5
+      }
+    },
+    "provider": "luma",
+    "provider_name": "KIE_AI",
+    "description": "Transform and resize your videos effortlessly with Ray 2 Flash Reframe. This tool intelligently expands or adjusts your video’s aspect ratio—adding visually consistent content to the sides, top, or bottom—without altering the original subject.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/aivideo/videos/186/396136358051/luma-reframe.mp4",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/luma-reframe.avif"
+  },
+  {
+    "id": "seedance-2-video-edit",
+    "name": "Seedance 2 Video Edit",
+    "endpoint": "seedance-v2.0-video-edit",
+    "family": "sd-v2.0",
+    "imageField": "images_list",
+    "videoField": "video_urls",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Replace the running man with @image1. Preserve the exact running motion, speed, and camera shake. Ensure the armor glows dynamically with the environment lighting and reflects passing car lights. Maintain realistic foot contact with the ground and motion blur consistency."
+        ],
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Text prompt describing the video edit."
+      },
+      "video_urls": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v2.0-video-edit-in.avif"
+        ],
+        "description": "Upload up to 1 video URL. (Max size: 10MB, Max duration: 15s)",
+        "field": "videos_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Video URLs",
+        "name": "video_urls",
+        "maxItems": 1
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v2.0-video-edit.jpg"
+        ],
+        "description": "Upload up to 9 image URLs.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Image URLs",
+        "name": "images_list",
+        "maxItems": 9
+      },
+      "audio_files": {
+        "examples": [],
+        "description": "Up to 3 reference audio clip URLs (MP3/WAV, total max 15s). Each Nth audio corresponds to @audioN in the prompt.",
+        "field": "audios_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Audio Reference URLs",
+        "name": "audio_files",
+        "maxItems": 3
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "4:3",
+          "3:4"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "default": "16:9"
+      },
+      "quality": {
+        "enum": [
+          "high",
+          "basic"
+        ],
+        "title": "Quality",
+        "name": "quality",
+        "type": "string",
+        "default": "basic"
+      },
+      "duration": {
+        "type": "int",
+        "title": "Duration (seconds)",
+        "name": "duration",
+        "description": "Output video duration in seconds (4–15).",
+        "default": 5,
+        "minValue": 4,
+        "maxValue": 15,
+        "step": 1
+      }
+    },
+    "provider": "bytedance",
+    "provider_name": "PI_API",
+    "description": "SD 2.0 Video Edit modifies existing videos based on text prompts and optional reference images.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v2.0-video-edit.mp4",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v2.0-video-edit.avif"
+  },
+
+
+  {
+    "id": "happy-horse-1-video-edit",
+    "name": "Happy Horse 1 Video Edit",
+    "endpoint": "happy-horse-1-video-edit",
+    "family": "happy-horse-1",
+    "imageField": "images_list",
+    "videoField": "video_url",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Edit instruction describing the change to apply to the video.",
+        "examples": [
+          "Replace the horse with @image1 and transform the kitchen environment to match @image2 while preserving the original running path and camera movement. Add larger fire bursts, exploding soup pots, flying vegetables, steam clouds, and frantic comedic reactions from the raccoon chef."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-reference-to-video-1080p.mp4"
+        ],
+        "description": "Source video URL. MP4/MOV (H.264 recommended), 3-60s, <=100 MB, longer side <=2160px, shorter >=320px, frame rate >8 fps.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-video-edit-720p-1.jpg",
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-video-edit-720p-2.jpg"
+        ],
+        "description": "Optional 0-5 reference image URLs to guide the edit.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 5
+      },
+      "audio_setting": {
+        "enum": [
+          "auto",
+          "origin"
+        ],
+        "type": "string",
+        "title": "Audio Setting",
+        "name": "audio_setting",
+        "description": "Audio strategy: 'auto' lets the model decide, 'origin' preserves source audio.",
+        "default": "auto"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Optional random seed for reproducibility (0-2147483647).",
+        "default": 0,
+        "minValue": 0,
+        "maxValue": 2147483647,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.0 Video Edit - modify an input video using a natural-language instruction with optional reference images. Selectable output resolution (720p/1080p) - price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/f2d805a3-e08b-478c-92cc-9a9e9c0cee92.avif",
+    "image_url": "https://cdn.muapi.ai/assets/f2d805a3-e08b-478c-92cc-9a9e9c0cee92.avif"
+  },
+  {
+    "id": "happy-horse-1.1-video-edit",
+    "name": "Happy Horse 1.1 Video Edit",
+    "endpoint": "happy-horse-1.1-video-edit",
+    "family": "happy-horse-1.1",
+    "imageField": "images_list",
+    "videoField": "video_url",
+    "imageOptional": true,
+    "hasPrompt": true,
+    "promptRequired": true,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Edit instruction describing the change to apply to the video.",
+        "examples": [
+          "Replace the horse with @image1 and replace the shopping cart with @image2 while preserving the original high-speed motion and camera movement."
+        ]
+      },
+      "resolution": {
+        "enum": [
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "title": "Resolution",
+        "name": "resolution",
+        "description": "Output resolution. Price scales with resolution: 720p is cheaper, 1080p is more expensive.",
+        "default": "720p"
+      },
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-reference-to-video-720p.mp4"
+        ],
+        "description": "Source video URL. MP4/MOV (H.264 recommended), 3-60s, <=100 MB, longer side <=2160px, shorter >=320px, frame rate >8 fps.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "images_list": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-video-edit-1080p-1.jpg",
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/happy-horse-1-video-edit-1080p-2.jpg"
+        ],
+        "description": "Optional 0-5 reference image URLs to guide the edit.",
+        "field": "images_list",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Reference Images",
+        "name": "images_list",
+        "maxItems": 5
+      },
+      "audio_setting": {
+        "enum": [
+          "auto",
+          "origin"
+        ],
+        "type": "string",
+        "title": "Audio Setting",
+        "name": "audio_setting",
+        "description": "Audio strategy: 'auto' lets the model decide, 'origin' preserves source audio.",
+        "default": "auto"
+      },
+      "seed": {
+        "type": "int",
+        "title": "Seed",
+        "name": "seed",
+        "description": "Optional random seed for reproducibility (0-2147483647).",
+        "default": 0,
+        "minValue": 0,
+        "maxValue": 2147483647,
+        "step": 1
+      }
+    },
+    "provider": "alibaba",
+    "provider_name": "KINOVI",
+    "description": "Happy Horse 1.1 Video Edit — modify an input video using natural-language instructions with optional reference images. Selectable output resolution (720p/1080p) — price scales with the resolution chosen.",
+    "example_url": "https://cdn.muapi.ai/assets/5da8b3c4-56db-4b80-8187-36b02ae584d9.avif",
+    "image_url": "https://cdn.muapi.ai/assets/5da8b3c4-56db-4b80-8187-36b02ae584d9.avif"
+  },
+
+
+  {
+    "id": "topaz-upscale-video-creative",
+    "name": "Topaz Upscale Video Creative",
+    "endpoint": "topaz-upscale-video-creative",
+    "family": "topaz-2-video-creative",
+    "videoField": "video_url",
+    "hasPrompt": true,
+    "promptRequired": false,
+    "inputs": {
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler-in.mp4"
+        ],
+        "description": "Input video to upscale.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "prompt": {
+        "description": "Optional text prompt to guide creative detail (limits input to 450 frames when set).",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "creativity": {
+        "description": "Creative detail strength (0-1).",
+        "type": "number",
+        "title": "Creativity",
+        "name": "creativity",
+        "default": 0.5
+      },
+      "realism": {
+        "description": "Realism strength (0-1).",
+        "type": "number",
+        "title": "Realism",
+        "name": "realism"
+      },
+      "sharp": {
+        "description": "Sharpening amount (0-1).",
+        "type": "number",
+        "title": "Sharp",
+        "name": "sharp"
+      },
+      "upscale_factor": {
+        "description": "Factor to upscale the video by.",
+        "type": "number",
+        "title": "Upscale Factor",
+        "name": "upscale_factor",
+        "default": 2
+      },
+      "target_fps": {
+        "description": "Target output frame rate.",
+        "type": "int",
+        "title": "Target FPS",
+        "name": "target_fps",
+        "minValue": 16,
+        "maxValue": 60,
+        "step": 1
+      },
+      "H264_output": {
+        "description": "Encode output using H.264 instead of the default codec.",
+        "type": "boolean",
+        "title": "H264 Output",
+        "name": "H264_output",
+        "default": false
+      }
+    },
+    "provider": "topaz",
+    "provider_name": "FAL_AI",
+    "description": "Upscale a video with Topaz's Astra 2 creative diffusion model, generating new plausible detail while enlarging up to 4x and up to 4K.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler.mp4",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler.avif"
+  },
+  {
+    "id": "topaz-upscale-video-generative",
+    "name": "Topaz Upscale Video Generative",
+    "endpoint": "topaz-upscale-video-generative",
+    "family": "topaz-2-video-generative",
+    "videoField": "video_url",
+    "hasPrompt": false,
+    "inputs": {
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler-in.mp4"
+        ],
+        "description": "Input video to upscale.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "model": {
+        "description": "Topaz Starlight generative upscale model variant.",
+        "type": "string",
+        "title": "Model",
+        "name": "model",
+        "enum": [
+          "Starlight Precise 2.6",
+          "Starlight HQ",
+          "Starlight Mini",
+          "Starlight Sharp",
+          "Starlight Fast 2"
+        ],
+        "default": "Starlight Precise 2.6"
+      },
+      "upscale_factor": {
+        "description": "Factor to upscale the video by.",
+        "type": "number",
+        "title": "Upscale Factor",
+        "name": "upscale_factor",
+        "default": 2
+      },
+      "target_fps": {
+        "description": "Target output frame rate.",
+        "type": "int",
+        "title": "Target FPS",
+        "name": "target_fps",
+        "minValue": 16,
+        "maxValue": 60,
+        "step": 1
+      },
+      "softness": {
+        "description": "Softness level, Starlight Precise 2.6 only (1-5).",
+        "type": "int",
+        "title": "Softness",
+        "name": "softness",
+        "minValue": 1,
+        "maxValue": 5,
+        "step": 1
+      },
+      "H264_output": {
+        "description": "Encode output using H.264 instead of the default codec.",
+        "type": "boolean",
+        "title": "H264 Output",
+        "name": "H264_output",
+        "default": false
+      }
+    },
+    "provider": "topaz",
+    "provider_name": "FAL_AI",
+    "description": "Upscale a video with Topaz's Starlight generative models, reconstructing clean, temporally consistent detail for heavily degraded or low-resolution footage.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler.mp4",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler.avif"
+  },
+  {
+    "id": "topaz-upscale-video-precision",
+    "name": "Topaz Upscale Video Precision",
+    "endpoint": "topaz-upscale-video-precision",
+    "family": "topaz-2-video-precision",
+    "videoField": "video_url",
+    "hasPrompt": false,
+    "inputs": {
+      "video_url": {
+        "examples": [
+          "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler-in.mp4"
+        ],
+        "description": "Input video to upscale.",
+        "field": "video",
+        "type": "string",
+        "title": "Video URL",
+        "name": "video_url"
+      },
+      "model": {
+        "description": "Topaz precision upscale model variant (Proteus/Iris/Dione/Artemis/Gaia/Rhea/Theia families).",
+        "type": "string",
+        "title": "Model",
+        "name": "model",
+        "enum": [
+          "Proteus",
+          "Proteus Natural",
+          "Iris",
+          "Iris Low Quality",
+          "Dione DV",
+          "Dione TV",
+          "Dione Robust",
+          "Dione Dehalo",
+          "Dione Robust Dehalo",
+          "Artemis High Quality",
+          "Artemis Medium Quality",
+          "Artemis Low Quality",
+          "Artemis Strong Halo",
+          "Artemis Medium Halo",
+          "Artemis Aliasing & Moire",
+          "Gaia HQ",
+          "Gaia CG",
+          "Gaia 2",
+          "Rhea",
+          "Theia Fine Tune Detail",
+          "Theia Fine Tune Fidelity"
+        ],
+        "default": "Proteus"
+      },
+      "upscale_factor": {
+        "description": "Factor to upscale the video by.",
+        "type": "number",
+        "title": "Upscale Factor",
+        "name": "upscale_factor",
+        "default": 2
+      },
+      "target_fps": {
+        "description": "Target output frame rate.",
+        "type": "int",
+        "title": "Target FPS",
+        "name": "target_fps",
+        "minValue": 16,
+        "maxValue": 60,
+        "step": 1
+      },
+      "compression": {
+        "description": "Compression-artifact reduction amount (0-1).",
+        "type": "number",
+        "title": "Compression",
+        "name": "compression"
+      },
+      "noise": {
+        "description": "Noise reduction amount (0-1).",
+        "type": "number",
+        "title": "Noise",
+        "name": "noise"
+      },
+      "halo": {
+        "description": "Halo/ringing reduction amount (0-1).",
+        "type": "number",
+        "title": "Halo",
+        "name": "halo"
+      },
+      "grain": {
+        "description": "Film-grain amount to add back (0-0.1).",
+        "type": "number",
+        "title": "Grain",
+        "name": "grain"
+      },
+      "recover_detail": {
+        "description": "Detail recovery amount (0-1).",
+        "type": "number",
+        "title": "Recover Detail",
+        "name": "recover_detail"
+      },
+      "H264_output": {
+        "description": "Encode output using H.264 instead of the default codec.",
+        "type": "boolean",
+        "title": "H264 Output",
+        "name": "H264_output",
+        "default": false
+      }
+    },
+    "provider": "topaz",
+    "provider_name": "FAL_AI",
+    "description": "Upscale a video faithfully with Topaz's precision model library (Proteus, Artemis, Iris, Dione, Gaia, Rhea, Theia), tuned for clean broadcast/CGI/animation sources.",
+    "example_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler.mp4",
+    "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/topaz-upscaler.avif"
   }
 ];
 
@@ -28248,6 +31453,58 @@ export const motionControlModels = [
     supportsSeed: true,
     aspectRatios: ["16:9", "9:16", "4:3", "1:1", "3:4", "21:9"],
     defaultAspectRatio: "16:9"
+  },
+  {
+    "id": "seedance-2.5-intl-motion-control",
+    "name": "Seedance 2.5 Intl Motion Control",
+    "shortName": "Seedance 2.5 Intl",
+    "endpoint": "seedance-2.5-intl-motion-control",
+    "family": "seedance",
+    "description": "International-region Seedance 2.5 Motion Control — recast an existing performance video with new performers while preserving the original motion, choreography, blocking, camera work, and location. Upload a reference video plus character images and an optional short instruction.",
+    "maxDuration": 30,
+    "minDuration": 4,
+    "defaultDuration": 5,
+    "maxImages": 30,
+    "supportsAudio": true,
+    "supportsBitrate": true,
+    "supportsSeed": true,
+    "aspectRatios": [
+      "adaptive",
+      "16:9",
+      "9:16",
+      "1:1",
+      "4:3",
+      "3:4",
+      "21:9",
+      "9:21"
+    ],
+    "defaultAspectRatio": "16:9"
+  },
+  {
+    "id": "seedance-2.5-spicy-motion-control",
+    "name": "Seedance 2.5 Spicy Motion Control",
+    "shortName": "Seedance 2.5 Spicy",
+    "endpoint": "seedance-2.5-spicy-motion-control",
+    "family": "seedance",
+    "description": "Spicy Seedance 2.5 Motion Control — recast an existing performance video with a bolder creative treatment while preserving the original motion, choreography, blocking, camera work, and location. Upload a reference video plus character images and an optional short instruction.",
+    "maxDuration": 30,
+    "minDuration": 4,
+    "defaultDuration": 5,
+    "maxImages": 30,
+    "supportsAudio": true,
+    "supportsBitrate": true,
+    "supportsSeed": true,
+    "aspectRatios": [
+      "adaptive",
+      "16:9",
+      "9:16",
+      "1:1",
+      "4:3",
+      "3:4",
+      "21:9",
+      "9:21"
+    ],
+    "defaultAspectRatio": "16:9"
   }
 ];
 
