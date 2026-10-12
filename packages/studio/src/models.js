@@ -2296,6 +2296,72 @@ export const t2iModels = [
     "provider_name": "Google"
   },
   {
+    "id": "nano-banana-2-1",
+    "name": "Nano Banana 2.1",
+    "endpoint": "nano-banana-2-1",
+    "family": "nano",
+    "inputs": {
+      "prompt": {
+        "description": "Positive prompt for generation.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "examples": [
+          "A futuristic cityscape with glowing neon lights reflected in rain-soaked streets, ultra-detailed 4K photography."
+        ]
+      },
+      "aspect_ratio": {
+        "enum": [
+          "1:1",
+          "1:4",
+          "1:8",
+          "2:3",
+          "3:2",
+          "3:4",
+          "4:1",
+          "4:3",
+          "4:5",
+          "5:4",
+          "8:1",
+          "9:16",
+          "16:9",
+          "21:9",
+          "auto"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "The aspect ratio of the generated image.",
+        "default": "auto"
+      },
+      "resolution": {
+        "enum": [
+          "1k",
+          "2k",
+          "4k"
+        ],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "The resolution of the generated image.",
+        "default": "1k"
+      },
+      "output_format": {
+        "enum": [
+          "jpg",
+          "png"
+        ],
+        "title": "Output Format",
+        "name": "output_format",
+        "type": "string",
+        "description": "The format of the output image.",
+        "default": "jpg"
+      }
+    },
+    "provider": "google",
+    "provider_name": "Google"
+  },
+  {
     "id": "seedream-5.0",
     "name": "Seedream 5.0",
     "endpoint": "seedream-5.0",
@@ -12139,6 +12205,75 @@ export const i2iModels = [
         "type": "boolean",
         "description": "Whether to use Google Search for prompt enhancement.",
         "default": false
+      },
+      "output_format": {
+        "enum": [
+          "jpg",
+          "png"
+        ],
+        "title": "Output Format",
+        "name": "output_format",
+        "type": "string",
+        "description": "The format of the output image.",
+        "default": "jpg"
+      }
+    },
+    "provider": "google",
+    "provider_name": "Google"
+  },
+  {
+    "id": "nano-banana-2-1-edit",
+    "name": "Nano Banana 2.1 Edit",
+    "endpoint": "nano-banana-2-1-edit",
+    "family": "nano",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "maxImages": 14,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Positive prompt for generation.",
+        "examples": [
+          "Transform the portrait into a cyberpunk style with neon lighting, metallic accessories, and a rain-soaked city background, maintaining the subject's facial features."
+        ]
+      },
+      "aspect_ratio": {
+        "enum": [
+          "1:1",
+          "1:4",
+          "1:8",
+          "2:3",
+          "3:2",
+          "3:4",
+          "4:1",
+          "4:3",
+          "4:5",
+          "5:4",
+          "8:1",
+          "9:16",
+          "16:9",
+          "21:9",
+          "auto"
+        ],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "The aspect ratio of the generated image.",
+        "default": "auto"
+      },
+      "resolution": {
+        "enum": [
+          "1k",
+          "2k",
+          "4k"
+        ],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "The resolution of the generated image.",
+        "default": "1k"
       },
       "output_format": {
         "enum": [
